@@ -28,12 +28,12 @@ public class PruebaP2 {
         AgentsConnection.connect(
                 "isg2.ugr.es", //host
                 6000, //puerto
-                "Practica2", //Cambia en p2 y p3
+                "Practica2", 
                 "Lackey", //Username
                 "iVwGdxOa", //Passw
                 false //SSL
         ); 
-        
+
         
         //Creacion del objeto MiAgente
         try{
