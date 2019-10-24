@@ -38,7 +38,7 @@ public class PruebaP2 {
         
         //Creacion del objeto MiAgente
         try{
-            dragonFly = new MiAgente(new AgentID("DragonFly-GL"));
+            dragonFly = new MiAgente(new AgentID("DragonFly-GL-JF"));
         } catch(Exception e){
             System.err.println("El agente ya existe en la plataforma");
             return;
