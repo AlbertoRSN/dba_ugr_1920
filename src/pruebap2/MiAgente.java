@@ -19,16 +19,23 @@ import com.eclipsesource.json.JsonValue;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-//Otras librerías
-import java.util.ArrayList;
-
-
 public class MiAgente extends SuperAgent {
     
     private EstadosDrone estadoActual;
     
     private static final String USER = "Lackey";
     private static final String PASS = "iVwGdxOa";
+    
+    // Posiciones vectores de percepción
+    static final int POSNW = 48;
+    static final int POSN = 49;
+    static final int POSNE = 50;
+    static final int POSW = 59;
+    static final int POSACTUAL = 60;
+    static final int POSE = 61;
+    static final int POSSW = 70;
+    static final int POSS = 71;
+    static final int POSSE = 72;
     
     public MiAgente(AgentID aid) throws Exception {
         super(aid);
@@ -200,20 +207,36 @@ public class MiAgente extends SuperAgent {
         
         switch( movimiento ){
             case "moveN":
+                if( mismaAltura( alturas.get( POSN ).asDouble() ) )
+                    lonecesita = true;
                 break;
             case "moveNE":
+                if( mismaAltura( alturas.get( POSNE ).asDouble() ) )
+                    lonecesita = true;
                 break;
             case "moveE":
+                if( mismaAltura( alturas.get( POSE ).asDouble() ) )
+                    lonecesita = true;
                 break;
             case "moveSE":
+                if( mismaAltura( alturas.get( POSSE ).asDouble() ) )
+                    lonecesita = true;
                 break;
             case "moveS":
+                if( mismaAltura( alturas.get( POSS ).asDouble() ) )
+                    lonecesita = true;
                 break;
             case "moveSW":
+                if( mismaAltura( alturas.get( POSSW ).asDouble() ) )
+                    lonecesita = true;
                 break;
             case "moveW":
+                if( mismaAltura( alturas.get( POSW ).asDouble() ) )
+                    lonecesita = true;
                 break;
             case "move NW":
+                if( mismaAltura( alturas.get( POSNW ).asDouble() ) )
+                    lonecesita = true;
                 break;
         }
         
@@ -238,7 +261,8 @@ public class MiAgente extends SuperAgent {
         // ***************************************************
         JsonObject objeto; //= new JsonObject();
         
-        String mapa = "playground";
+        //String mapa = "playground";
+        String mapa = "case_study";
         
         String login = this.mensajeLogIn(mapa);
         //Enviar Mensaje Login
@@ -282,7 +306,7 @@ public class MiAgente extends SuperAgent {
                     //for( int i = 0; i < 121; i++ )
                         //alturasRelativas.add( jArray.get(i).asDouble() );
                     
-                    if( this.mismaAltura( alturasRelativas.get(60).asDouble() ) ) {
+                    if( this.mismaAltura( alturasRelativas.get( POSACTUAL ).asDouble() ) ) {
                         mov = this.accionDireccion(valorAngle);
                         if( this.necesitaSubir( mov, alturasRelativas ) )
                             mov = "moveUP";
@@ -296,6 +320,11 @@ public class MiAgente extends SuperAgent {
                     //Recibir respuesta 1
                     objeto = Json.parse(this.recibirMensaje()).asObject();
                     System.out.println("\n\nRespuesta: " + objeto.toString());
+                    
+                    if( objeto.get( "result" ).asString().equals( "CRASHED" ) ) {
+                        System.out.println( "\n\nDragonfly se ha estrellado..." );
+                        break;
+                    }
 
                     //Recibir respuesta 2
                     objeto = Json.parse(this.recibirMensaje()).asObject();
@@ -306,6 +335,8 @@ public class MiAgente extends SuperAgent {
             //}
             //------------------------------------------------------------------------------*/
 
+        System.out.println( "\n\nGoal: " + objeto.get("perceptions").asObject().get("goal").asBoolean() );
+            
         // ---------------- CODIGO PARA HACER LOGOUT ------------------- ***Meter en una funcion en un futuro***
         objeto = new JsonObject();
         //Hacer logout para recibir traza
