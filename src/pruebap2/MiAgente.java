@@ -1,9 +1,6 @@
 package pruebap2;
 
-/**
- *
- * @author Alberto Rodriguez, Juan Francisco Díaz Moreno
- */
+
 import DBA.SuperAgent;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
@@ -19,12 +16,18 @@ import com.eclipsesource.json.JsonValue;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/**
+ * @author Alberto Rodriguez, Juan Francisco Díaz Moreno, Ana Rodriguez
+ */
 public class MiAgente extends SuperAgent {
     
     private EstadosDrone estadoActual;
     
     private static final String USER = "Lackey";
     private static final String PASS = "iVwGdxOa";
+    
+    //nivel maximo de bateria 100%
+    private int batery=100;
     
     // Posiciones vectores de percepción
     static final int POSNW = 48;
@@ -41,41 +44,36 @@ public class MiAgente extends SuperAgent {
         super(aid);
     }
     
-     
     @Override
     public void init(){
          System.out.println("\n\n Inicializando el agente -> " + this.getName());
     }
     
-    
     /**
-     * 
      * Crear imagen a partir de la traza recibida
      * @author Alberto Rodríguez
      * @param jsObjeto Nombre del objeto con la traza
-     * 
      */
     public void crearTraza(JsonObject jsObjeto){
-         try{
-                System.out.println("\nRecibiendo traza");
-                //JsonObject injson = Json.parse(this.recibirMensaje()).asObject();
-                JsonArray ja = jsObjeto.get("trace").asArray();
-                byte data[] = new byte[ja.size()];
-                for(int i=0; i<data.length; i++){
-                    data[i] = (byte) ja.get(i).asInt();
-                }
-           try (FileOutputStream fos = new FileOutputStream("mitraza.png")) {
-               fos.write(data);
-           }
-                System.out.println("¡Bravo! Traza guardada :)");
-            }catch (IOException ex){
-                System.err.println("Error procesando traza");
+        
+        try{
+            System.out.println("\nRecibiendo traza");
+            //JsonObject injson = Json.parse(this.recibirMensaje()).asObject();
+            JsonArray ja = jsObjeto.get("trace").asArray();
+            byte data[] = new byte[ja.size()];
+            for(int i=0; i<data.length; i++){
+                data[i] = (byte) ja.get(i).asInt();
             }
+            try (FileOutputStream fos = new FileOutputStream("mitraza.png")) {
+                fos.write(data);
+            }
+            System.out.println("¡Bravo! Traza guardada :)");
+        }catch (IOException ex){
+            System.err.println("Error procesando traza");
+        }
     }
-    
-    
+
     /**
-     * 
      * Envia un mensaje a otro agente
      * @author Alberto Rodríguez
      * @param receiver Nombre del agente que recibira el mensaje
@@ -83,13 +81,10 @@ public class MiAgente extends SuperAgent {
      * 
      */
     public void enviarMensaje(AgentID receiver, String content) {
-		
-        ACLMessage outbox = new ACLMessage();
-		
+        ACLMessage outbox = new ACLMessage();	
         outbox.setSender(this.getAid());
         outbox.setReceiver(receiver);
-        outbox.setContent(content);
-		
+        outbox.setContent(content);	
         this.send(outbox);
     }
     
@@ -107,7 +102,6 @@ public class MiAgente extends SuperAgent {
         }
         return null;
     }
-    
     
     /**
     * Crear el objeto Json Para hacer el login
@@ -131,8 +125,7 @@ public class MiAgente extends SuperAgent {
         
         return objetoLogin.toString();
     }
-    
-    
+
     /**
     * Hacer comprobaciones de direccion segun el angulo
     * @author Alberto Rodriguez, Alicia Rodriguez
@@ -185,7 +178,7 @@ public class MiAgente extends SuperAgent {
         return movimiento;
     }
     
-     /**
+    /**
     * Hacer comprobaciones de altura relativa para bajar
     * @author Juan Francisco Díaz
     * @return boolean (true si está al nivel del suelo, false si está por encima)
@@ -244,6 +237,19 @@ public class MiAgente extends SuperAgent {
     }
     
     /**
+     * Funcion para repostar
+     * @author Ana Rodriguez Duran
+     * @param nameReceiver nombre del agente receptor
+     * @param map mapa
+     */
+    private void refuel(AgentID nameReceiver, String map){
+        System.out.println(".....Refuel....");
+        String refuel = this.mensajeLogIn(map);
+        this.enviarMensaje((nameReceiver), refuel);
+        batery=100;
+    }
+    
+    /**
     *
     * @author Alberto Rodriguez, Juan Francisco Díaz
     * 
@@ -299,6 +305,7 @@ public class MiAgente extends SuperAgent {
         //System.out.println("Valor Angulo: " + valorAngle);
         String mov = null;
         estadoActual = EstadosDrone.ESTADO_INICIAL;
+        //comprobar en el bucle el fuel?
         
             // ------------------- POSIBLE BUCLE -------------------------
             while( objeto.get("perceptions").asObject().get("goal").asBoolean() == false &&
