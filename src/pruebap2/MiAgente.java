@@ -297,21 +297,28 @@ public class MiAgente extends SuperAgent {
         
         //System.out.println("Valor Angulo: " + valorAngle);
         String mov = null;
+        estadoActual = EstadosDrone.ESTADO_INICIAL;
         
             // ------------------- POSIBLE BUCLE -------------------------
-            while(objeto.get("perceptions").asObject().get("goal").asBoolean() == false ){
+            while( objeto.get("perceptions").asObject().get("goal").asBoolean() == false &&
+                       !estadoActual.equals( EstadosDrone.ESTRELLADO )){
                 
                     // Obtenemos el vector de alturas relativas
                     alturasRelativas = objeto.get("perceptions").asObject().get("elevation").asArray();
                     //for( int i = 0; i < 121; i++ )
                         //alturasRelativas.add( jArray.get(i).asDouble() );
                     
-                    if( this.mismaAltura( alturasRelativas.get( POSACTUAL ).asDouble() ) ) {
-                        mov = this.accionDireccion(valorAngle);
-                        if( this.necesitaSubir( mov, alturasRelativas ) )
-                            mov = "moveUP";
-                    } else
+                    if( !this.mismaAltura( alturasRelativas.get( POSACTUAL ).asDouble() ) && !estadoActual.equals(EstadosDrone.SUBIENDO) ) {
                         mov = "moveDW";
+                        estadoActual = EstadosDrone.MOVIENDO;
+                    } else {
+                        mov = this.accionDireccion(valorAngle);
+                        if( this.necesitaSubir( mov, alturasRelativas ) ) {
+                            mov = "moveUP";
+                            estadoActual = EstadosDrone.SUBIENDO;
+                        } else
+                            estadoActual = EstadosDrone.MOVIENDO;
+                    }
                     
                     objeto.add("command", mov).add("key", clave);
                     this.enviarMensaje(nameReceiver, objeto.toString());
@@ -323,7 +330,7 @@ public class MiAgente extends SuperAgent {
                     
                     if( objeto.get( "result" ).asString().equals( "CRASHED" ) ) {
                         System.out.println( "\n\nDragonfly se ha estrellado..." );
-                        break;
+                        estadoActual = EstadosDrone.ESTRELLADO;
                     }
 
                     //Recibir respuesta 2

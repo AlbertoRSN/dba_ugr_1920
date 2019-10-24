@@ -13,5 +13,8 @@ package pruebap2;
  * en cada instante previo a una situacion critica.
  */
 public enum EstadosDrone {
-    ESTADO_INICIAL //Estado inicial del bot (init)
+    ESTADO_INICIAL, //Estado inicial del bot (init)
+    SUBIENDO,           // Estado para cuando está subiendo para moverse
+    MOVIENDO,            // Estado para cuando se está moviendo
+    ESTRELLADO          // Estado para cuando se estrella
 }
