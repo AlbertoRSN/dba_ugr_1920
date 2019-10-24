@@ -2,7 +2,7 @@ package pruebap2;
 
 /**
  *
- * @author Alberto Rodriguez
+ * @author Alberto Rodriguez, Juan Francisco Díaz Moreno
  */
 import DBA.SuperAgent;
 import es.upv.dsic.gti_ia.core.ACLMessage;
@@ -19,7 +19,8 @@ import com.eclipsesource.json.JsonValue;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-
+//Otras librerías
+import java.util.ArrayList;
 
 
 public class MiAgente extends SuperAgent {
@@ -113,7 +114,7 @@ public class MiAgente extends SuperAgent {
         objetoLogin.add("command", "login")
               .add("map", map)
               .add("radar", false)
-              .add("elevation", false)
+              .add("elevation", true)
               .add("magnetic", false)
               .add("gps", false)
               .add("fuel", false)
@@ -177,11 +178,51 @@ public class MiAgente extends SuperAgent {
         return movimiento;
     }
     
+     /**
+    * Hacer comprobaciones de altura relativa para bajar
+    * @author Juan Francisco Díaz
+    * @return boolean (true si está al nivel del suelo, false si está por encima)
+    * @param alturaRelativa Altura de la coordenada en la que se encuentra el agente
+    */    
+    public boolean mismaAltura( double alturaRelativa ) {
+        return alturaRelativa == 0;
+    }
+    
+    /**
+    * Hacer comprobaciones de altura relativa para seguir
+    * @author Juan Francisco Díaz
+    * @return boolean (true si necesita subir, false si no)
+    * @param movimiento Próximo movimiento seleccionado para realizar
+    * @param alturas Vector con las alturas relativas que percibe
+    */    
+    public boolean  necesitaSubir( String movimiento, JsonArray alturas ) {
+        boolean lonecesita = false;
         
+        switch( movimiento ){
+            case "moveN":
+                break;
+            case "moveNE":
+                break;
+            case "moveE":
+                break;
+            case "moveSE":
+                break;
+            case "moveS":
+                break;
+            case "moveSW":
+                break;
+            case "moveW":
+                break;
+            case "move NW":
+                break;
+        }
+        
+        return lonecesita;
+    }
     
     /**
     *
-    * @author Alberto Rodriguez
+    * @author Alberto Rodriguez, Juan Francisco Díaz
     * 
     */
     @Override
@@ -226,13 +267,28 @@ public class MiAgente extends SuperAgent {
         double valorAngle;
         valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
         
+        // Vector de alturas relativas
+        //ArrayList<double> alturasRelativas = new ArrayList<double>();
+        JsonArray alturasRelativas = new JsonArray();
+        
         //System.out.println("Valor Angulo: " + valorAngle);
         String mov = null;
         
             // ------------------- POSIBLE BUCLE -------------------------
             while(objeto.get("perceptions").asObject().get("goal").asBoolean() == false ){
                 
-                    mov = this.accionDireccion(valorAngle);
+                    // Obtenemos el vector de alturas relativas
+                    alturasRelativas = objeto.get("perceptions").asObject().get("elevation").asArray();
+                    //for( int i = 0; i < 121; i++ )
+                        //alturasRelativas.add( jArray.get(i).asDouble() );
+                    
+                    if( this.mismaAltura( alturasRelativas.get(60).asDouble() ) ) {
+                        mov = this.accionDireccion(valorAngle);
+                        if( this.necesitaSubir( mov, alturasRelativas ) )
+                            mov = "moveUP";
+                    } else
+                        mov = "moveDW";
+                    
                     objeto.add("command", mov).add("key", clave);
                     this.enviarMensaje(nameReceiver, objeto.toString());
                     System.out.println("Envio Movimiento -> " + mov);
@@ -245,6 +301,7 @@ public class MiAgente extends SuperAgent {
                     objeto = Json.parse(this.recibirMensaje()).asObject();
                     System.out.println("\n\nPercepcion: " + objeto.get("perceptions").asObject().toString());
                     valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
+                    
                 }
             //}
             //------------------------------------------------------------------------------*/
