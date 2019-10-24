@@ -2,7 +2,7 @@ package pruebap2;
 
 /**
  *
- * @author Alberto Rodriguez
+ * @author Alberto Rodriguez, Juan Francisco Díaz Moreno
  */
 import DBA.SuperAgent;
 import es.upv.dsic.gti_ia.core.ACLMessage;
@@ -19,15 +19,23 @@ import com.eclipsesource.json.JsonValue;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-
-
-
 public class MiAgente extends SuperAgent {
     
     private EstadosDrone estadoActual;
     
     private static final String USER = "Lackey";
     private static final String PASS = "iVwGdxOa";
+    
+    // Posiciones vectores de percepción
+    static final int POSNW = 48;
+    static final int POSN = 49;
+    static final int POSNE = 50;
+    static final int POSW = 59;
+    static final int POSACTUAL = 60;
+    static final int POSE = 61;
+    static final int POSSW = 70;
+    static final int POSS = 71;
+    static final int POSSE = 72;
     
     public MiAgente(AgentID aid) throws Exception {
         super(aid);
@@ -113,7 +121,7 @@ public class MiAgente extends SuperAgent {
         objetoLogin.add("command", "login")
               .add("map", map)
               .add("radar", false)
-              .add("elevation", false)
+              .add("elevation", true)
               .add("magnetic", false)
               .add("gps", false)
               .add("fuel", false)
@@ -177,11 +185,67 @@ public class MiAgente extends SuperAgent {
         return movimiento;
     }
     
+     /**
+    * Hacer comprobaciones de altura relativa para bajar
+    * @author Juan Francisco Díaz
+    * @return boolean (true si está al nivel del suelo, false si está por encima)
+    * @param alturaRelativa Altura de la coordenada en la que se encuentra el agente
+    */    
+    public boolean mismaAltura( double alturaRelativa ) {
+        return alturaRelativa == 0;
+    }
+    
+    /**
+    * Hacer comprobaciones de altura relativa para seguir
+    * @author Juan Francisco Díaz
+    * @return boolean (true si necesita subir, false si no)
+    * @param movimiento Próximo movimiento seleccionado para realizar
+    * @param alturas Vector con las alturas relativas que percibe
+    */    
+    public boolean  necesitaSubir( String movimiento, JsonArray alturas ) {
+        boolean lonecesita = false;
         
+        switch( movimiento ){
+            case "moveN":
+                if( mismaAltura( alturas.get( POSN ).asDouble() ) )
+                    lonecesita = true;
+                break;
+            case "moveNE":
+                if( mismaAltura( alturas.get( POSNE ).asDouble() ) )
+                    lonecesita = true;
+                break;
+            case "moveE":
+                if( mismaAltura( alturas.get( POSE ).asDouble() ) )
+                    lonecesita = true;
+                break;
+            case "moveSE":
+                if( mismaAltura( alturas.get( POSSE ).asDouble() ) )
+                    lonecesita = true;
+                break;
+            case "moveS":
+                if( mismaAltura( alturas.get( POSS ).asDouble() ) )
+                    lonecesita = true;
+                break;
+            case "moveSW":
+                if( mismaAltura( alturas.get( POSSW ).asDouble() ) )
+                    lonecesita = true;
+                break;
+            case "moveW":
+                if( mismaAltura( alturas.get( POSW ).asDouble() ) )
+                    lonecesita = true;
+                break;
+            case "move NW":
+                if( mismaAltura( alturas.get( POSNW ).asDouble() ) )
+                    lonecesita = true;
+                break;
+        }
+        
+        return lonecesita;
+    }
     
     /**
     *
-    * @author Alberto Rodriguez
+    * @author Alberto Rodriguez, Juan Francisco Díaz
     * 
     */
     @Override
@@ -197,7 +261,8 @@ public class MiAgente extends SuperAgent {
         // ***************************************************
         JsonObject objeto; //= new JsonObject();
         
-        String mapa = "playground";
+        //String mapa = "playground";
+        String mapa = "case_study";
         
         String login = this.mensajeLogIn(mapa);
         //Enviar Mensaje Login
@@ -226,13 +291,35 @@ public class MiAgente extends SuperAgent {
         double valorAngle;
         valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
         
+        // Vector de alturas relativas
+        //ArrayList<double> alturasRelativas = new ArrayList<double>();
+        JsonArray alturasRelativas = new JsonArray();
+        
         //System.out.println("Valor Angulo: " + valorAngle);
         String mov = null;
+        estadoActual = EstadosDrone.ESTADO_INICIAL;
         
             // ------------------- POSIBLE BUCLE -------------------------
-            while(objeto.get("perceptions").asObject().get("goal").asBoolean() == false ){
+            while( objeto.get("perceptions").asObject().get("goal").asBoolean() == false &&
+                       !estadoActual.equals( EstadosDrone.ESTRELLADO )){
                 
-                    mov = this.accionDireccion(valorAngle);
+                    // Obtenemos el vector de alturas relativas
+                    alturasRelativas = objeto.get("perceptions").asObject().get("elevation").asArray();
+                    //for( int i = 0; i < 121; i++ )
+                        //alturasRelativas.add( jArray.get(i).asDouble() );
+                    
+                    if( !this.mismaAltura( alturasRelativas.get( POSACTUAL ).asDouble() ) && !estadoActual.equals(EstadosDrone.SUBIENDO) ) {
+                        mov = "moveDW";
+                        estadoActual = EstadosDrone.MOVIENDO;
+                    } else {
+                        mov = this.accionDireccion(valorAngle);
+                        if( this.necesitaSubir( mov, alturasRelativas ) ) {
+                            mov = "moveUP";
+                            estadoActual = EstadosDrone.SUBIENDO;
+                        } else
+                            estadoActual = EstadosDrone.MOVIENDO;
+                    }
+                    
                     objeto.add("command", mov).add("key", clave);
                     this.enviarMensaje(nameReceiver, objeto.toString());
                     System.out.println("Envio Movimiento -> " + mov);
@@ -240,15 +327,23 @@ public class MiAgente extends SuperAgent {
                     //Recibir respuesta 1
                     objeto = Json.parse(this.recibirMensaje()).asObject();
                     System.out.println("\n\nRespuesta: " + objeto.toString());
+                    
+                    if( objeto.get( "result" ).asString().equals( "CRASHED" ) ) {
+                        System.out.println( "\n\nDragonfly se ha estrellado..." );
+                        estadoActual = EstadosDrone.ESTRELLADO;
+                    }
 
                     //Recibir respuesta 2
                     objeto = Json.parse(this.recibirMensaje()).asObject();
                     System.out.println("\n\nPercepcion: " + objeto.get("perceptions").asObject().toString());
                     valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
+                    
                 }
             //}
             //------------------------------------------------------------------------------*/
 
+        System.out.println( "\n\nGoal: " + objeto.get("perceptions").asObject().get("goal").asBoolean() );
+            
         // ---------------- CODIGO PARA HACER LOGOUT ------------------- ***Meter en una funcion en un futuro***
         objeto = new JsonObject();
         //Hacer logout para recibir traza
