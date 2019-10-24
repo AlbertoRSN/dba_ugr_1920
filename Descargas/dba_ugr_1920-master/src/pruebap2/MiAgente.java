@@ -196,6 +196,7 @@ public class MiAgente extends SuperAgent {
         System.out.println(".....Refuel....");
         String refuel = this.mensajeLogIn(map);
         this.enviarMensaje((nameReceiver), refuel);
+        batery=100;
     }
     
      /**
