@@ -35,6 +35,10 @@ public class PruebaP2 {
         ); 
 
         
+       // asda
+        
+        
+        
         //Creacion del objeto MiAgente
         try{
             dragonFly = new MiAgente(new AgentID("DragonFly-GL"));
