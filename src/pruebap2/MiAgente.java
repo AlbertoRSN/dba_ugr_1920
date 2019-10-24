@@ -207,35 +207,35 @@ public class MiAgente extends SuperAgent {
         
         switch( movimiento ){
             case "moveN":
-                if( mismaAltura( alturas.get( POSN ).asDouble() ) )
+                if( alturas.get( POSN ).asDouble() < 0 )
                     lonecesita = true;
                 break;
             case "moveNE":
-                if( mismaAltura( alturas.get( POSNE ).asDouble() ) )
+                if( alturas.get( POSNE ).asDouble() < 0 )
                     lonecesita = true;
                 break;
             case "moveE":
-                if( mismaAltura( alturas.get( POSE ).asDouble() ) )
+                if( alturas.get( POSE ).asDouble() < 0 )
                     lonecesita = true;
                 break;
             case "moveSE":
-                if( mismaAltura( alturas.get( POSSE ).asDouble() ) )
+                if( alturas.get( POSSE ).asDouble() < 0 )
                     lonecesita = true;
                 break;
             case "moveS":
-                if( mismaAltura( alturas.get( POSS ).asDouble() ) )
+                if( alturas.get( POSS ).asDouble() < 0 )
                     lonecesita = true;
                 break;
             case "moveSW":
-                if( mismaAltura( alturas.get( POSSW ).asDouble() ) )
+                if( alturas.get( POSSW ).asDouble() < 0 )
                     lonecesita = true;
                 break;
             case "moveW":
-                if( mismaAltura( alturas.get( POSW ).asDouble() ) )
+                if( alturas.get( POSW ).asDouble() < 0 )
                     lonecesita = true;
                 break;
             case "move NW":
-                if( mismaAltura( alturas.get( POSNW ).asDouble() ) )
+                if( alturas.get( POSNW ).asDouble() < 0 )
                     lonecesita = true;
                 break;
         }
@@ -262,7 +262,8 @@ public class MiAgente extends SuperAgent {
         JsonObject objeto; //= new JsonObject();
         
         //String mapa = "playground";
-        String mapa = "case_study";
+        //String mapa = "case_study";+
+        String mapa = "minicase";
         
         String login = this.mensajeLogIn(mapa);
         //Enviar Mensaje Login
@@ -319,6 +320,16 @@ public class MiAgente extends SuperAgent {
                         } else
                             estadoActual = EstadosDrone.MOVIENDO;
                     }
+                    
+                    System.out.println( alturasRelativas.get( POSNW ).asDouble() + "\t" +
+                                                     alturasRelativas.get( POSN ).asDouble() + "\t" +
+                                                     alturasRelativas.get( POSNE ).asDouble() + "\n" +
+                                                     alturasRelativas.get( POSW ).asDouble() + "\t" +
+                                                     alturasRelativas.get( POSACTUAL ).asDouble() + "\t" +
+                                                     alturasRelativas.get( POSE ).asDouble() + "\n" +
+                                                     alturasRelativas.get( POSSW ).asDouble() + "\t" +
+                                                     alturasRelativas.get( POSS ).asDouble() + "\t" +
+                                                     alturasRelativas.get( POSSE ).asDouble() + "\n");
                     
                     objeto.add("command", mov).add("key", clave);
                     this.enviarMensaje(nameReceiver, objeto.toString());
