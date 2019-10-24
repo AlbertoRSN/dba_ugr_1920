@@ -5,15 +5,15 @@
  */
 package pruebap2;
 
-/**
- *
- * @author Alberto Rodriguez
- */
 
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.AgentsConnection;
 
 
+/**
+ *
+ * @author Alberto Rodriguez
+ */
 public class PruebaP2 {
 
     /**
@@ -33,9 +33,7 @@ public class PruebaP2 {
                 "iVwGdxOa", //Passw
                 false //SSL
         ); 
-        
-        
-        
+
         //Creacion del objeto MiAgente
         try{
             dragonFly = new MiAgente(new AgentID("DragonFly-AL")); //Este agente se ha quedado zombie en el servido
@@ -43,11 +41,7 @@ public class PruebaP2 {
             System.err.println("El agente ya existe en la plataforma");
             return;
         }
-        
         //Lanzo el agente
-        dragonFly.start();
-        
-        
-    }
-    
+        dragonFly.start();   
+    }   
 }
