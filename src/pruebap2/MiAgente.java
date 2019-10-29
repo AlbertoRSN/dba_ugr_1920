@@ -376,7 +376,7 @@ public class MiAgente extends SuperAgent {
         JsonObject objeto;
         
         //Mapa a probar
-        String mapa = "map1";
+        String mapa = "playground";
         
         String login = this.mensajeLogIn(mapa);
         //Enviar Mensaje Login
