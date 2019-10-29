@@ -40,6 +40,10 @@ public class MiAgente extends SuperAgent {
     static final int POSS = 71;
     static final int POSSE = 72;
     
+    // Variables para contemplar el refuel
+    static final int MINFUEL = 10;
+    static final double GASTOMOV = 0.5;
+    
     public MiAgente(AgentID aid) throws Exception {
         super(aid);
     }
@@ -114,11 +118,11 @@ public class MiAgente extends SuperAgent {
         
         objetoLogin.add("command", "login")
               .add("map", map)
-              .add("radar", false)
+              .add("radar", true)
               .add("elevation", true)
               .add("magnetic", false)
               .add("gps", false)
-              .add("fuel", false)
+              .add("fuel", true)
               .add("gonio", true)
               .add("user", USER)
               .add("password", PASS);
@@ -189,14 +193,54 @@ public class MiAgente extends SuperAgent {
     }
     
     /**
+    * Comprobaciones de alturas relativas
+    * @author Juan Francisco Díaz
+    * @return double altura relativa de la posicion a la que se quiere avanzar
+    * @param movimiento siguiente direccion a la que se quiere ir
+    * @param alturas alturas relativas de las casillas adyacentes
+    */    
+    public double getAlturaDestino( String movimiento, JsonArray alturas  ) {
+        double alturaDestino = 0;
+        
+        switch( movimiento ){
+            case "moveN":
+                alturaDestino = alturas.get( POSN ).asDouble();
+                break;
+            case "moveNE":
+                alturaDestino = alturas.get( POSNE ).asDouble();
+                break;
+            case "moveE":
+                alturaDestino = alturas.get( POSE ).asDouble();
+                break;
+            case "moveSE":
+                alturaDestino = alturas.get( POSSE ).asDouble();
+                break;
+            case "moveS":
+                alturaDestino = alturas.get( POSS ).asDouble();
+                break;
+            case "moveSW":
+                alturaDestino = alturas.get( POSSW ).asDouble();
+                break;
+            case "moveW":
+                alturaDestino = alturas.get( POSW ).asDouble();
+                break;
+            case "moveNW":
+                alturaDestino = alturas.get( POSNW ).asDouble();
+                break;
+        }
+        
+        return alturaDestino;
+    }
+    
+    /**
     * Hacer comprobaciones de altura relativa para seguir
     * @author Juan Francisco Díaz
     * @return boolean (true si necesita subir, false si no)
     * @param movimiento Próximo movimiento seleccionado para realizar
     * @param alturas Vector con las alturas relativas que percibe
     */    
-    public boolean  necesitaSubir( String movimiento, JsonArray alturas ) {
-        boolean lonecesita = false;
+    public boolean  necesitaSubir( double siguienteAltura ) {
+        /*boolean lonecesita = false;
         
         switch( movimiento ){
             case "moveN":
@@ -227,13 +271,14 @@ public class MiAgente extends SuperAgent {
                 if( alturas.get( POSW ).asDouble() < 0 )
                     lonecesita = true;
                 break;
-            case "move NW":
+            case "moveNW":
                 if( alturas.get( POSNW ).asDouble() < 0 )
                     lonecesita = true;
                 break;
         }
         
-        return lonecesita;
+        return lonecesita;*/
+        return ( siguienteAltura < 0 );
     }
     
     /**
@@ -242,11 +287,21 @@ public class MiAgente extends SuperAgent {
      * @param nameReceiver nombre del agente receptor
      * @param map mapa
      */
-    private void refuel(AgentID nameReceiver, String map){
-        System.out.println(".....Refuel....");
-        String refuel = this.mensajeLogIn(map);
-        this.enviarMensaje((nameReceiver), refuel);
-        batery=100;
+    private boolean necesitaRefuel(double alturaActual, double siguienteAltura, double fuelActual){
+        boolean necesita = false;
+        
+        double necesario = GASTOMOV;
+        double diferenciaAltura = alturaActual - siguienteAltura;
+        
+        if( diferenciaAltura < 0 )
+            diferenciaAltura *= -1;
+        
+        necesario += diferenciaAltura * GASTOMOV;
+        
+        if( ( fuelActual - necesario ) < MINFUEL )
+            necesita = true;
+        
+        return necesita;
     }
     
     /**
@@ -269,7 +324,8 @@ public class MiAgente extends SuperAgent {
         
         //String mapa = "playground";
         //String mapa = "case_study";+
-        String mapa = "minicase";
+        //String mapa = "minicase";
+        String mapa = "map4";
         
         String login = this.mensajeLogIn(mapa);
         //Enviar Mensaje Login
@@ -301,11 +357,15 @@ public class MiAgente extends SuperAgent {
         // Vector de alturas relativas
         //ArrayList<double> alturasRelativas = new ArrayList<double>();
         JsonArray alturasRelativas = new JsonArray();
+        JsonArray alturas = new JsonArray();
         
         //System.out.println("Valor Angulo: " + valorAngle);
         String mov = null;
         estadoActual = EstadosDrone.ESTADO_INICIAL;
         //comprobar en el bucle el fuel?
+        double fuelActual;
+        double siguienteAltura;
+        double alturaActual;
         
             // ------------------- POSIBLE BUCLE -------------------------
             while( objeto.get("perceptions").asObject().get("goal").asBoolean() == false &&
@@ -313,15 +373,22 @@ public class MiAgente extends SuperAgent {
                 
                     // Obtenemos el vector de alturas relativas
                     alturasRelativas = objeto.get("perceptions").asObject().get("elevation").asArray();
+                    alturas = objeto.get("perceptions").asObject().get("radar").asArray();
+                    fuelActual = objeto.get("perceptions").asObject().get("fuel").asDouble();
+                    alturaActual = alturasRelativas.get( POSACTUAL ).asDouble();
                     //for( int i = 0; i < 121; i++ )
                         //alturasRelativas.add( jArray.get(i).asDouble() );
                     
-                    if( !this.mismaAltura( alturasRelativas.get( POSACTUAL ).asDouble() ) && !estadoActual.equals(EstadosDrone.SUBIENDO) ) {
+                    if( !this.mismaAltura( alturaActual ) && !estadoActual.equals(EstadosDrone.SUBIENDO) ) {
                         mov = "moveDW";
                         estadoActual = EstadosDrone.MOVIENDO;
                     } else {
                         mov = this.accionDireccion(valorAngle);
-                        if( this.necesitaSubir( mov, alturasRelativas ) ) {
+                        siguienteAltura = getAlturaDestino( mov, alturasRelativas );
+                        System.out.println( "\nSiguiente movimiento: " + mov + ", Siguiente altura: " + "\n" );
+                        if( this.necesitaRefuel( alturaActual, siguienteAltura, fuelActual ) )
+                            mov = "refuel";
+                        else if( this.necesitaSubir( siguienteAltura ) ) {
                             mov = "moveUP";
                             estadoActual = EstadosDrone.SUBIENDO;
                         } else
@@ -337,6 +404,7 @@ public class MiAgente extends SuperAgent {
                                                      alturasRelativas.get( POSSW ).asDouble() + "\t" +
                                                      alturasRelativas.get( POSS ).asDouble() + "\t" +
                                                      alturasRelativas.get( POSSE ).asDouble() + "\n");
+                    System.out.println( "\nAltura actual: " + alturaActual + "\n" );
                     
                     objeto.add("command", mov).add("key", clave);
                     this.enviarMensaje(nameReceiver, objeto.toString());
