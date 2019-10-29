@@ -283,7 +283,7 @@ public class MiAgente extends SuperAgent {
     
     /**
      * Funcion para repostar
-     * @author Ana Rodriguez Duran
+     * @author Ana Rodriguez Duran, Juan Francisco Díaz Moreno
      * @param nameReceiver nombre del agente receptor
      * @param map mapa
      */
