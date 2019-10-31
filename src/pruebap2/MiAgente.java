@@ -27,6 +27,9 @@ public class MiAgente extends SuperAgent {
     //Referencia al estado de DragonFly
     private EstadosDrone estadoActual;
     
+    
+    private Interfaz interfaz;
+    
     //Datos para establecer conexion con el servidor
     private static final String USER = "Lackey";
     private static final String PASS = "iVwGdxOa";
@@ -405,6 +408,9 @@ public class MiAgente extends SuperAgent {
         //Vector de alturas relativas y absolutas
         JsonArray alturasRelativas = new JsonArray();
         JsonArray alturasAbsolutas = new JsonArray();
+        
+        //Inicializamos el objeto interfaz con las primeras percepciones que recibe
+        interfaz = new Interfaz(objeto.get("perceptions").asObject());
 
         double fuelActual;
         double siguienteAlturaRelativa;
@@ -488,7 +494,8 @@ public class MiAgente extends SuperAgent {
             //Recibir respuesta 2
             objeto = Json.parse(this.recibirMensaje()).asObject();
             System.out.println("\n\nPercepcion: " + objeto.get("perceptions").asObject().toString());
-            valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();     
+            valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
+            interfaz.actualizar(objeto.get("perceptions").asObject());
         }
 
         System.out.println( "\n\nGoal: " + objeto.get("perceptions").asObject().get("goal").asBoolean() );
