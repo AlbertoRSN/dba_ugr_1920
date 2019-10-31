@@ -377,9 +377,10 @@ public class MiAgente extends SuperAgent {
         //Declaramos quien recibe el mensaje
         AgentID nameReceiver = new AgentID("Lesath");
        
-        //***************************************************
+        //***************************************************//
         //              ENVIO DE MENSAJE 
-        //***************************************************
+        //***************************************************//
+        
         JsonObject objeto;
         
         String login = this.mensajeLogIn(mapa);
