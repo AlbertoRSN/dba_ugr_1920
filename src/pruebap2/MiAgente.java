@@ -44,6 +44,9 @@ public class MiAgente extends SuperAgent {
     static final int MINFUEL = 10;
     static final double GASTOMOV = 0.5;
     
+    // Interfaz gráfica
+    private Interfaz interfaz;
+    
     public MiAgente(AgentID aid) throws Exception {
         super(aid);
     }
@@ -422,7 +425,7 @@ public class MiAgente extends SuperAgent {
         //String mapa = "playground";
         //String mapa = "case_study";+
         //String mapa = "minicase";
-        String mapa = "map5";
+        String mapa = "map1";
         
         String login = this.mensajeLogIn(mapa);
         //Enviar Mensaje Login
@@ -445,6 +448,7 @@ public class MiAgente extends SuperAgent {
         //RECIBIR SEGUNDO MENSAJE CON LAS PERCEPCIONES DEL CONTROLADOR
         objeto = Json.parse(this.recibirMensaje()).asObject();
         System.out.println("\n\nPercepcion: " + objeto.get("perceptions").asObject().toString());
+        interfaz = new Interfaz( objeto.get( "perceptions" ).asObject() );
         
         //Coger valor angulo del GONIO -> objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble());
         
@@ -559,6 +563,7 @@ public class MiAgente extends SuperAgent {
                     objeto = Json.parse(this.recibirMensaje()).asObject();
                     System.out.println("\n\nPercepcion: " + objeto.get("perceptions").asObject().toString());
                     valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
+                    interfaz.actualizar( objeto.get( "perceptions" ).asObject() );
                     
                 }
             //}
