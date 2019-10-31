@@ -20,6 +20,10 @@ import java.io.IOException;
  */
 public class MiAgente extends SuperAgent {
     
+    
+    //----------- VARIABLE PARA ELEGIR MAPA -----------------
+    private String mapa = "map5";
+    
     //Referencia al estado de DragonFly
     private EstadosDrone estadoActual;
     
@@ -136,7 +140,7 @@ public class MiAgente extends SuperAgent {
 
     /**
      * Hace comprobaciones de direccion segun el angulo
-     * @author Alberto Rodriguez, Alicia Rodriguez
+     * @author Alberto Rodriguez
      * @param valorAngle valor del angulo  donde se encuentra objetivo
      * @return string con la accion/movimiento a realizar
      */
@@ -180,7 +184,7 @@ public class MiAgente extends SuperAgent {
     
     /**
       * Vuelve a hacer comprobaciones de direccion cuando no se puede acceder a la primera
-      * @author Alberto Rodriguez, Alicia Rodriguez
+      * @author Juan Francisco Diaz
       * @param movimientoImposible movimiento que no se ha podido realizar antes
       * @param alturas alturas relativas de las casillas adyacentes
       * @return string con la accion/movimiento a realizar
@@ -361,7 +365,7 @@ public class MiAgente extends SuperAgent {
     }
     
     /**
-     * @author Alberto Rodriguez, Juan Francisco Diaz, Ana ROdriguez
+     * @author Alberto Rodriguez, Juan Francisco Diaz, Ana Rodriguez, Alicia Rodriguez
      */
     @Override
     public void execute(){
@@ -374,9 +378,6 @@ public class MiAgente extends SuperAgent {
         //              ENVIO DE MENSAJE 
         //***************************************************
         JsonObject objeto;
-        
-        //Mapa a probar
-        String mapa = "playground";
         
         String login = this.mensajeLogIn(mapa);
         //Enviar Mensaje Login
