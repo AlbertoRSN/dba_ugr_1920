@@ -19,9 +19,8 @@ import java.io.IOException;
  * @author Alberto Rodriguez, Juan Francisco Diaz Moreno, Ana Rodriguez
  */
 public class MiAgente extends SuperAgent {
-    
-    
-    //----------- VARIABLE PARA ELEGIR MAPA -----------------
+
+    //----------- VARIABLE PARA ELEGIR MAPA -------------
     private String mapa = "map5";
     
     //Referencia al estado de DragonFly
