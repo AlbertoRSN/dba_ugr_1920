@@ -418,7 +418,7 @@ public class MiAgente extends SuperAgent {
         //}
         System.out.println("entra en sigMovoviMiento");
         
-        while(i<arrayMov1.length || encontrado){
+        while(i<arrayMov1.length || encontrado==true){
         //for(int i=0;i<(arrayMov1.length);i++){
         System.out.println("entra en el while");
             
