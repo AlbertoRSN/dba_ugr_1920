@@ -12,11 +12,13 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Clase principal MiAgente, hereda de SuperAgent
  * 
- * @author Alberto Rodriguez, Juan Francisco Diaz Moreno, Ana Rodriguez
+ * @author Alberto Rodriguez, Juan Francisco Diaz Moreno, Ana Rodriguez, Alicia Rodriguez, Valentine
  */
 public class MiAgente extends SuperAgent {
 
@@ -51,6 +53,14 @@ public class MiAgente extends SuperAgent {
     //Asumimos repostar con un 10 por ciento
     static final int MINFUEL = 10;
     static final double GASTOMOV = 0.5;
+    
+    
+    //ArrayList que controla las posiciones por las que hemos pasado(aquí)
+    ArrayList<JsonObject> posRecorridasnArrayList = new ArrayList<JsonObject>();
+    
+    String[] arrayMov1 = new String[]{"N","NE","E","SE","S","SW","W","NW"};
+    
+   
     
     /** Constructor de la clase MiAgente
      * @author Ana Rodriguez
@@ -131,7 +141,7 @@ public class MiAgente extends SuperAgent {
                    .add("radar", true)
                    .add("elevation", true)
                    .add("magnetic", false)
-                   .add("gps", false)
+                   .add("gps", true)
                    .add("fuel", true)
                    .add("gonio", true)
                    .add("user", USER)
@@ -147,6 +157,7 @@ public class MiAgente extends SuperAgent {
      * @return string con la accion/movimiento a realizar
      */
     public String accionDireccion(double valorAngle){
+       
         String movimiento = null;
         
         //DIRECCIÓN N SI ESTÁ ENTRE 330-360 ó 0-30
@@ -184,6 +195,351 @@ public class MiAgente extends SuperAgent {
         return movimiento;
     }
     
+    /**
+     * Almacena en un vector la direcciónes más prometedoras segun el angulo
+     * @author Alicia Rodriguez
+     * @param valorAngle valor del angulo  donde se encuentra objetivo
+     * @return String[] con el vector de movimientos mas prometedores ordenados
+     */
+    public String[] masPrometedor(double valorAngle){
+        String[] arrayMov = new String[]{"N","NE","E","SE","S","SW","W","NW"};
+        
+        //DIRECCIÓN N SI ESTÁ ENTRE 330-360 ó 0-30
+        if((valorAngle >=  330 && valorAngle <= 360) || (valorAngle >= 0 && valorAngle < 30)){
+            arrayMov[0]="N";
+                    
+            if(valorAngle >=  330 && valorAngle <= 360){
+                arrayMov[1]="NW";
+                arrayMov[2]="NE";
+                arrayMov[3]="W";
+                arrayMov[4]="E";
+                arrayMov[5]="SW";
+                arrayMov[6]="SE";
+                arrayMov[7]="S";
+            }
+            if(valorAngle >= 0 && valorAngle < 30){
+                arrayMov[1]="NE";
+                arrayMov[2]="NW";
+                arrayMov[3]="E";
+                arrayMov[4]="W";
+                arrayMov[5]="SE";
+                arrayMov[6]="SW";
+                arrayMov[7]="S";
+            }    
+        }
+        
+        //DIRECCION NW SI ESTA ENTRE [300-330)
+        else if(valorAngle >=  300 && valorAngle < 330 ){
+            arrayMov[0]="NW";
+            if(valorAngle >= 315){
+                arrayMov[1]="N";
+                arrayMov[2]="W"; 
+                arrayMov[3]="NE"; 
+                arrayMov[4]="SW"; 
+                arrayMov[5]="E"; 
+                arrayMov[6]="S"; 
+                arrayMov[7]="SE"; 
+            }
+            if(valorAngle < 315){
+                arrayMov[1]="W";
+                arrayMov[2]="N"; 
+                arrayMov[3]="SW"; 
+                arrayMov[4]="NE"; 
+                arrayMov[5]="S"; 
+                arrayMov[6]="E"; 
+                arrayMov[7]="SE"; 
+            }
+        }  
+        
+        //DIRECCION NE SI ESTA ENTRE [30-60]
+        if(valorAngle >=  30 && valorAngle <= 60 ){
+            arrayMov[0]= "NE";
+            if(valorAngle <= 45){
+                arrayMov[1]="N";
+                arrayMov[2]="E"; 
+                arrayMov[3]="NW"; 
+                arrayMov[4]="SE"; 
+                arrayMov[5]="W"; 
+                arrayMov[6]="S"; 
+                arrayMov[7]="SW"; 
+            }
+            if(valorAngle > 45){
+                arrayMov[1]="E";
+                arrayMov[2]="N"; 
+                arrayMov[3]="SE"; 
+                arrayMov[4]="NW"; 
+                arrayMov[5]="S"; 
+                arrayMov[6]="W"; 
+                arrayMov[7]="SW"; 
+             }   
+        }  
+        
+        //DIRECCION E SI ESTA ENTRE (60-120]
+        if(valorAngle >  60 && valorAngle <= 120 ){
+            arrayMov[0]= "E";
+            if(valorAngle <= 90){
+                arrayMov[1]="NE";
+                arrayMov[2]="SE"; 
+                arrayMov[3]="N"; 
+                arrayMov[4]="S"; 
+                arrayMov[5]="NW"; 
+                arrayMov[6]="SW"; 
+                arrayMov[7]="W"; 
+                
+            }
+            if(valorAngle > 90){
+                arrayMov[1]="SE";
+                arrayMov[2]="NE"; 
+                arrayMov[3]="S"; 
+                arrayMov[4]="N"; 
+                arrayMov[5]="SW"; 
+                arrayMov[6]="NW"; 
+                arrayMov[7]="W"; 
+                
+            }  
+        }  
+        
+        //DIRECCION SE SI ESTA ENTRE (120-150]
+        if(valorAngle > 120 && valorAngle <= 150 ){
+            arrayMov[0] = "SE";
+            if(valorAngle <= 135){
+                arrayMov[1]="E";
+                arrayMov[2]="S"; 
+                arrayMov[3]="NE"; 
+                arrayMov[4]="SW"; 
+                arrayMov[5]="N"; 
+                arrayMov[6]="W"; 
+                arrayMov[7]="NW"; 
+            }
+            if(valorAngle > 135){
+                arrayMov[1]="S";
+                arrayMov[2]="E"; 
+                arrayMov[3]="SW"; 
+                arrayMov[4]="NE"; 
+                arrayMov[5]="W"; 
+                arrayMov[6]="N"; 
+                arrayMov[7]="NW"; 
+            }
+        } 
+              
+         if(valorAngle > 150 && valorAngle < 210 ){
+            arrayMov[0] = "S";
+            if(valorAngle <= 180){
+                arrayMov[1]="SE";
+                arrayMov[2]="SW"; 
+                arrayMov[3]="E"; 
+                arrayMov[4]="W"; 
+                arrayMov[5]="NE"; 
+                arrayMov[6]="NW"; 
+                arrayMov[7]="N"; 
+            }
+            if(valorAngle > 180){
+                arrayMov[1]="SW";
+                arrayMov[2]="SE"; 
+                arrayMov[3]="W"; 
+                arrayMov[4]="E"; 
+                arrayMov[5]="NW"; 
+                arrayMov[6]="NE"; 
+                arrayMov[7]="N"; 
+            }
+        }
+        //DIRECCION SW SI ESTA ENTRE [210-240]
+        if(valorAngle >= 210 && valorAngle <= 240 ){
+            arrayMov[0] = "SW";
+            if(valorAngle <= 225){
+                arrayMov[1]="S";
+                arrayMov[2]="W"; 
+                arrayMov[3]="SE"; 
+                arrayMov[4]="NW"; 
+                arrayMov[5]="E"; 
+                arrayMov[6]="N"; 
+                arrayMov[7]="NE"; 
+            }
+            if(valorAngle > 225){
+                arrayMov[1]="W";
+                arrayMov[2]="S"; 
+                arrayMov[3]="NW"; 
+                arrayMov[4]="SE"; 
+                arrayMov[5]="N"; 
+                arrayMov[6]="E"; 
+                arrayMov[7]="NE"; 
+            }
+        }
+        //DIRECCION W SI ESTA ENTRE (240-300)
+        if(valorAngle > 240 && valorAngle < 300 ){
+            arrayMov[0] = "W";
+            if(valorAngle <= 270){
+                arrayMov[1]="SW";
+                arrayMov[2]="NW"; 
+                arrayMov[3]="S"; 
+                arrayMov[4]="N"; 
+                arrayMov[5]="SE"; 
+                arrayMov[6]="NE"; 
+                arrayMov[7]="E"; 
+                
+            }
+            if(valorAngle > 270){
+                arrayMov[1]="NW";
+                arrayMov[2]="SW"; 
+                arrayMov[3]="N"; 
+                arrayMov[4]="S"; 
+                arrayMov[5]="NE"; 
+                arrayMov[6]="SE"; 
+                arrayMov[7]="E"; 
+                
+            }
+        }   
+          
+        return arrayMov;
+    }
+    
+    /**
+     * Devuelve el movimiento que debe seguir el agente elegido po el vector la direcciones más prometedoras
+     * @author Alicia Rodriguez
+     * @param arrayMov1 array ordenado con las posiones donde avanzar
+     * @param posRecorridasnArrayList arrayList con las posiciones por donde ya ha pasado el agente
+     * @param x coordenada x en la que está el agente
+     * @param y coordenada y en la que está el agente
+     * @param i posicion del array
+     * @return mov movimiento al que avanzar
+     */
+    public String sigMovimiento(String[] arrayMov1, ArrayList posRecorridasnArrayList, int x, int y, int i, int tam){
+        
+        String movimiento = null;
+        Iterator<JsonObject> nombreIterator = posRecorridasnArrayList.iterator();
+        JsonObject elemento = nombreIterator.next();
+        int numElementos = posRecorridasnArrayList.size();
+        boolean encontrado= false;
+        String[] array=arrayMov1;
+        //while(nombreIterator.hasNext() && tam < numElementos){
+        //    System.out.println(elemento.get("x").asInt());
+        //    tam++;
+        //}
+        System.out.println("entra en sigMovoviMiento");
+        
+        while(i<arrayMov1.length || encontrado==true){
+        //for(int i=0;i<(arrayMov1.length);i++){
+        System.out.println("entra en el while");
+            
+                if(arrayMov1[i] == "N"){                    
+                    y = y+1;
+                    while(nombreIterator.hasNext() && tam < numElementos){
+                        if( x == elemento.get("x").asInt() && y == elemento.get("y").asInt()){
+                            movimiento = sigMovimiento(array, posRecorridasnArrayList, x, y, i+1,tam);
+                        }
+                        else{
+                            movimiento = "moveN";
+                            encontrado=true;
+                        }  
+                        tam++;
+                    }  
+                }
+                  
+                if(arrayMov1[i] == "NE"){
+                    x = x+1;
+                    y = y+1;
+                    while(nombreIterator.hasNext() && tam < numElementos){
+                        if(x == elemento.get("x").asInt() && y == elemento.get("y").asInt()){
+                            movimiento = sigMovimiento(array, posRecorridasnArrayList, x, y, i+1, tam);
+                        }
+                        else{
+                            movimiento = "moveNE";
+                            encontrado=true;
+                        }
+                        tam++;
+                    }
+                }
+                
+                if(arrayMov1[i] == "E"){
+                    x = x+1;
+                    while(nombreIterator.hasNext() && tam < numElementos){
+                        if(x == elemento.get("x").asInt() && y == elemento.get("y").asInt()){
+                            movimiento = sigMovimiento(array, posRecorridasnArrayList, x, y, i+1, tam);
+                        }
+                        else{
+                            movimiento = "moveE";
+                            encontrado=true;
+                        }
+                        tam++;
+                    }
+                }
+                
+                if(arrayMov1[i] == "SE"){
+                    x = x+1;
+                    y = y-1;
+                    while(nombreIterator.hasNext() && tam < numElementos){
+                        if(x == elemento.get("x").asInt() && y == elemento.get("y").asInt()){
+                            movimiento = sigMovimiento(array, posRecorridasnArrayList, x, y, i+1, tam);
+                        }
+                        else{
+                            movimiento = "moveSE";
+                            encontrado=true;
+                        }
+                        tam++;
+                    }
+                }
+                
+                if(arrayMov1[i] == "S"){
+                    y = y-1;
+                    while(nombreIterator.hasNext() && tam < numElementos){
+                        if(x == elemento.get("x").asInt() && y == elemento.get("y").asInt()){
+                            movimiento = sigMovimiento(array, posRecorridasnArrayList, x, y, i+1, tam);
+                        }
+                        else{
+                            movimiento = "moveS";
+                            encontrado=true;
+                        }
+                        tam++;
+                    }
+                }
+                
+                if(arrayMov1[i] == "SW"){
+                    x = x-1;
+                    y = y-1;
+                    while(nombreIterator.hasNext() && tam < numElementos){
+                        if(x == elemento.get("x").asInt() && y == elemento.get("y").asInt()){
+                            movimiento = sigMovimiento(array, posRecorridasnArrayList, x, y, i+1, tam);
+                        }
+                        else{
+                            movimiento = "moveSW";
+                            encontrado=true;
+                        }
+                        tam++;
+                    }
+                }
+                
+                if(arrayMov1[i] == "W"){
+                    x = x-1;
+                    while(nombreIterator.hasNext() && tam < numElementos){
+                        if(x == elemento.get("x").asInt() && y == elemento.get("y").asInt()){
+                            movimiento = sigMovimiento(array, posRecorridasnArrayList, x, y, i+1, tam);
+                        }
+                        else{
+                            movimiento = "moveW";
+                            encontrado=true;
+                        }
+                        tam++;
+                    }
+                }
+                
+                if(arrayMov1[i] == "NW"){
+                    x = x-1;
+                    y = y+1;
+                    while(nombreIterator.hasNext() && tam < numElementos){
+                        if(x == elemento.get("x").asInt() && y == elemento.get("y").asInt()){
+                            movimiento = sigMovimiento(array, posRecorridasnArrayList, x, y, i+1, tam);
+                        }
+                        else{
+                            movimiento = "moveNW";
+                            encontrado=true;
+                        }
+                        tam++;
+                    }
+                }
+                
+            }
+        return movimiento;
+    }
     /**
       * Vuelve a hacer comprobaciones de direccion cuando no se puede acceder a la primera
       * @author Juan Francisco Diaz
@@ -367,7 +723,7 @@ public class MiAgente extends SuperAgent {
     }
     
     /**
-     * @author Alberto Rodriguez, Juan Francisco Diaz, Ana Rodriguez, Alicia Rodriguez
+     * @author Alberto Rodriguez, Juan Francisco Diaz, Ana Rodriguez, Alicia Rodriguez, Valentine
      */
     @Override
     public void execute(){
@@ -376,9 +732,10 @@ public class MiAgente extends SuperAgent {
         //Declaramos quien recibe el mensaje
         AgentID nameReceiver = new AgentID("Lesath");
        
-        //***************************************************
+        //***************************************************//
         //              ENVIO DE MENSAJE 
-        //***************************************************
+        //***************************************************//
+        
         JsonObject objeto;
         
         String login = this.mensajeLogIn(mapa);
@@ -420,6 +777,13 @@ public class MiAgente extends SuperAgent {
         boolean movimientoValido = true;
         String mov = null;
         
+        
+        int cont=0;
+        int x;
+        int y;
+        int indice=0;
+        int tam=0;
+                
         //Declaramos el estado actual del drone
         estadoActual = EstadosDrone.ESTADO_INICIAL;
         
@@ -429,14 +793,39 @@ public class MiAgente extends SuperAgent {
             alturasAbsolutas = objeto.get("perceptions").asObject().get("radar").asArray();
             fuelActual = objeto.get("perceptions").asObject().get("fuel").asDouble();
             alturaActual = alturasRelativas.get(POSACTUAL).asDouble();
-                    
+             
+           
+            //Justo al principio se añade la posición inicial, y a partir de ahí se van añadiendo las posiciones donde se situa(aqui)
+            posRecorridasnArrayList.add(objeto.get("perceptions").asObject().get("gps").asObject());
+            System.out.println(posRecorridasnArrayList.get(cont).asObject());
+            cont++;
+            
+            
             if(!this.mismaAltura(alturaActual) && !estadoActual.equals(EstadosDrone.SUBIENDO)){
                 //Para ponerse al nivel del suelo
                 mov = "moveDW";
                 estadoActual = EstadosDrone.MOVIENDO;
                 System.out.println("Posandome en tierra...");
             } else {
-                mov = this.accionDireccion( valorAngle );
+                
+                
+                
+                x = objeto.get("perceptions").asObject().get("gps").asObject().get("x").asInt();
+                System.out.println(objeto.get("perceptions").asObject().get("gps").asObject().get("x").asInt());
+                
+                y = objeto.get("perceptions").asObject().get("gps").asObject().get("y").asInt();
+                System.out.println(objeto.get("perceptions").asObject().get("gps").asObject().get("y").asInt());
+                
+                arrayMov1 = this.masPrometedor(valorAngle);
+                for(int i=0;i<(arrayMov1.length);i++){
+                    System.out.println(arrayMov1[i]);
+                }
+                
+                //nuevo
+                mov = this.sigMovimiento(arrayMov1,posRecorridasnArrayList, x, y, indice, tam);
+             
+                //antiguo
+                //mov = this.accionDireccion( valorAngle );
                 estadoActual = EstadosDrone.MOVIENDO;
                 siguienteAlturaRelativa = getAlturaDestino( mov, alturasRelativas );
                 siguienteAlturaAbsoluta = getAlturaDestino( mov, alturasAbsolutas );
@@ -476,7 +865,8 @@ public class MiAgente extends SuperAgent {
                                alturasRelativas.get(POSSE).asDouble() + "\n");
             
             System.out.println("\nAltura actual: " + alturaActual + "\n" );
-                    
+            
+            
             objeto.add("command", mov).add("key", clave);
             this.enviarMensaje(nameReceiver, objeto.toString());
             System.out.println("Envio Movimiento -> " + mov);
@@ -488,13 +878,19 @@ public class MiAgente extends SuperAgent {
             if( objeto.get( "result" ).asString().equals( "CRASHED" ) ) {
                 System.out.println( "\n\nDragonfly se ha estrellado..." );
                 estadoActual = EstadosDrone.ESTRELLADO;
+                break;
             }
 
+           
             //Recibir respuesta 2
             objeto = Json.parse(this.recibirMensaje()).asObject();
             System.out.println("\n\nPercepcion: " + objeto.get("perceptions").asObject().toString());
             valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
             interfaz.actualizar(objeto.get("perceptions").asObject());
+           
+           
+           
+           
         }
 
         System.out.println( "\n\nGoal: " + objeto.get("perceptions").asObject().get("goal").asBoolean() );

@@ -34,7 +34,7 @@ public class PruebaP2 {
 
         //Creacion del objeto MiAgente
         try{
-            dragonFly = new MiAgente(new AgentID("DragonFly-AL")); //Este agente se ha quedado zombie en el servido
+            dragonFly = new MiAgente(new AgentID("DragonFly-AL1")); //Este agente se ha quedado zombie en el servido
         } catch(Exception e){
             System.err.println("El agente ya existe en la plataforma");
             return;
