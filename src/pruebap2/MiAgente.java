@@ -768,7 +768,8 @@ public class MiAgente extends SuperAgent {
                 key = new Key(x,y);
                 
                 contenedor.put(key , true);   //((120,200), true)
-                
+                System.out.println(key.getKeyX());
+                System.out.println(key.getKeyY());
                 
                 arrayMov1 = this.masPrometedor(valorAngle);
                 for(int i=0;i<(arrayMov1.length);i++){
