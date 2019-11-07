@@ -63,9 +63,10 @@ public class MiAgente extends SuperAgent {
     //ArrayList que controla las posiciones por las que hemos pasado(aqui)
     ArrayList<JsonObject> posRecorridasnArrayList = new ArrayList<JsonObject>();    
     String[] arrayMov1 = new String[]{"N","NE","E","SE","S","SW","W","NW"};
-    Key key;
-    Hashtable<Key , Boolean> contenedor = new Hashtable<Key ,Boolean>();
-   
+    KeyPosition key;
+    HistoriaMov table = new HistoriaMov();
+    //Hashtable<Key , Boolean> contenedor = new Hashtable<Key ,Boolean>();
+    
     
     /** Constructor de la clase MiAgente
      * @author Ana Rodriguez
@@ -400,42 +401,42 @@ public class MiAgente extends SuperAgent {
     
     
     
-    public Key calculNewGpsPosicion(String nextPosition, int x, int y){
+    public KeyPosition calculNewGpsPosicion(String nextPosition, int x, int y){
     
-    Key coord;
+    KeyPosition coord;
     
            switch( nextPosition ){
             case "moveN":
-                y = y + 1;
+                y = y - 1;
                 break;
             case "moveNE":
                 x = x + 1;
-                y = y + 1;
+                y = y - 1;
                 break;
             case "moveE":
                 x = x + 1;
                 break;
             case "moveSE":
                 x = x + 1;
-                y = y - 1;
+                y = y + 1;
                 break;
             case "moveS":
-                y = y - 1;
+                y = y + 1;
                 break;
             case "moveSW":
-                x = x + 1;
-                y = y - 1;
+                x = x - 1;
+                y = y + 1;
                 break;
             case "moveW":
-                x = x + 1;
+                x = x - 1;
                 break;
             case "moveNW":
-                x = x + 1;
-                y = y + 1;
+                x = x - 1;
+                y = y - 1;
                 break;
         }
            
-        coord = new Key(x,y);
+        coord = new KeyPosition(x,y);
         return coord;      
     }
     
@@ -450,40 +451,41 @@ public class MiAgente extends SuperAgent {
      * @param indexListMejorMov posicion del array
      * @return mov movimiento al que avanzar
      */
-    public String sigMovimiento(String[] arrayMov1, Hashtable< Key , Boolean> HistoriasCoord, int x, int y){
+    public String sigMovimiento(String[] arrayMov1, HistoriaMov HistoriasCoord, int x, int y){
         
-        String mov;
-        Key coordPrueba = new Key(0,0);
+        String mov = " ";
+        KeyPosition coordPrueba = new KeyPosition(x,y);
         int indexListMejorMov=0;
-        boolean FueAqui = true;
-
-        while((FueAqui == true) && (indexListMejorMov < arrayMov1.length))
+        boolean Esta = false;
+        
+       while(indexListMejorMov < arrayMov1.length)
         {
             coordPrueba = calculNewGpsPosicion(arrayMov1[indexListMejorMov], x, y);
-         
-            if ( HistoriasCoord.contains(coordPrueba) == true )
-            {
-                indexListMejorMov ++;
+            
+            //Finaliza porque es false o porque ya ha recorrido todo el vector
+            for (int i=0; i< HistoriasCoord.size(); i++){
+                Esta = HistoriasCoord.get(i).equals(coordPrueba);
+                //Esta = ((HistoriasCoord.get(i).getKeyX() == coordPrueba.X) && (HistoriasCoord.get(i).getKeyY() == coordPrueba.Y));
+                if(Esta == true){
+                    i = HistoriasCoord.size();
+                    indexListMejorMov++;
+                }
+                System.out.println("HistoriasCoord: " + HistoriasCoord.get(i).getKeyX() + "," + HistoriasCoord.get(i).getKeyY()); 
+                System.out.println("CoordPrueba: " + coordPrueba.X + "," + coordPrueba.Y); 
+                System.out.println("¿Existe?" + Esta); 
             }
-            else
-            {
-                FueAqui = false;
-                contenedor.put( coordPrueba, true);
+            if(Esta == false){
+                mov = arrayMov1[indexListMejorMov];
+                HistoriasCoord.add(coordPrueba);
+                indexListMejorMov = arrayMov1.length;
             }
-            System.out.println(indexListMejorMov);
-            System.out.println(FueAqui);
+        }    
+        if(mov == " "){
+            mov = arrayMov1[0];
+            coordPrueba = calculNewGpsPosicion(arrayMov1[0], x, y);
+            HistoriasCoord.add(coordPrueba);
         }
         
-        if (indexListMejorMov == arrayMov1.length)
-        {
-           indexListMejorMov = 0;
-        }
-        /*else
-        {
-            // nothing to do 
-        }*/
-
-        mov = arrayMov1[indexListMejorMov]; 
         return mov;
 
     }
@@ -708,11 +710,7 @@ public class MiAgente extends SuperAgent {
         
         double valorAngle;
         valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
-        
-        
-        double valorDistance;
-        valorDistance = objeto.get("perceptions").asObject().get("gonio").asObject().get("distance").asDouble();
-        
+
         //Vector de alturas relativas y absolutas
         JsonArray alturasRelativas = new JsonArray();
         JsonArray alturasAbsolutas = new JsonArray();
@@ -761,15 +759,18 @@ public class MiAgente extends SuperAgent {
                                 
                 //aqui
                 x = objeto.get("perceptions").asObject().get("gps").asObject().get("x").asInt();
-                System.out.println(objeto.get("perceptions").asObject().get("gps").asObject().get("x").asInt());
+                //System.out.println(objeto.get("perceptions").asObject().get("gps").asObject().get("x").asInt());
                
                 y = objeto.get("perceptions").asObject().get("gps").asObject().get("y").asInt();
-                System.out.println(objeto.get("perceptions").asObject().get("gps").asObject().get("y").asInt());
-                key = new Key(x,y);
+                //System.out.println(objeto.get("perceptions").asObject().get("gps").asObject().get("y").asInt());
+                key = new KeyPosition(x,y);
                 
-                contenedor.put(key , true);   //((120,200), true)
-                System.out.println(key.getKeyX());
-                System.out.println(key.getKeyY());
+                
+                
+                
+                //contenedor.put(key , true);   //((120,200), true)
+                System.out.println("Valor X: " + key.getKeyX() + "Valor Y: " + key.getKeyY());
+ 
                 
                 arrayMov1 = this.masPrometedor(valorAngle);
                 for(int i=0;i<(arrayMov1.length);i++){
@@ -777,8 +778,8 @@ public class MiAgente extends SuperAgent {
                 }
                   
                 //nuevo
-                mov = this.sigMovimiento(arrayMov1,contenedor, x, y);
-             
+                mov = this.sigMovimiento(arrayMov1,table, key.getKeyX(), key.getKeyY());
+                //table.add(key);
                 
                 //antiguo
                 //mov = this.accionDireccion( valorAngle );
