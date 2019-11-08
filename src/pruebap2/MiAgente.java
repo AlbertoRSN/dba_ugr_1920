@@ -645,7 +645,7 @@ public class MiAgente extends SuperAgent {
     private boolean necesitaRefuel(double alturaActual, double siguienteAltura, double fuelActual){
         boolean necesita = false;
         double necesario = GASTOMOV;
-        double diferenciaAltura = alturaActual - siguienteAltura;
+        double diferenciaAltura = ( alturaActual - siguienteAltura) / 5;
         
         //Convierte el valor a positivo para calcular el gasto total de los movimientos
         if(diferenciaAltura < 0 )
@@ -715,7 +715,7 @@ public class MiAgente extends SuperAgent {
         JsonArray alturasAbsolutas = new JsonArray();
         
         //Inicializamos el objeto interfaz con las primeras percepciones que recibe
-        interfaz = new Interfaz(objeto.get("perceptions").asObject());
+        interfaz = new Interfaz(objeto.get("perceptions").asObject(), this, alturaMaxima );
 
         double fuelActual;
         double siguienteAlturaRelativa;
@@ -842,7 +842,7 @@ public class MiAgente extends SuperAgent {
             objeto = Json.parse(this.recibirMensaje()).asObject();
             System.out.println("\n\nPercepcion: " + objeto.get("perceptions").asObject().toString());
             valorAngle = objeto.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble();
-            interfaz.actualizar(objeto.get("perceptions").asObject());
+            interfaz.actualizar(objeto.get("perceptions").asObject(), mov );
            
            
            
