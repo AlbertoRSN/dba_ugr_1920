@@ -451,23 +451,26 @@ public class MiAgente extends SuperAgent {
      * @param indexListMejorMov posicion del array
      * @return mov movimiento al que avanzar
      */
-    public String sigMovimiento(String[] arrayMov1, HistoriaMov HistoriasCoord, int x, int y){
+    /*public String sigMovimiento(String[] arrayMov1, HistoriaMov HistoriasCoord, int x, int y){
         
-        String mov = " ";
+        String mov;
         KeyPosition coordPrueba = new KeyPosition(x,y);
         int indexListMejorMov=0;
         boolean Esta = false;
+        boolean salir1 =false;
         
-       while(indexListMejorMov < arrayMov1.length)
+        //mientras el index sea menor que el tamaño del array
+       while(indexListMejorMov < arrayMov1.length && salir1==false)
         {
+            //coger una coordenada posible
             coordPrueba = calculNewGpsPosicion(arrayMov1[indexListMejorMov], x, y);
             
-            //Finaliza porque es false o porque ya ha recorrido todo el vector
+            //Finaliza porque es true o porque ya ha recorrido todo el vector
             for (int i=0; i< HistoriasCoord.size(); i++){
                 Esta = HistoriasCoord.get(i).equals(coordPrueba);
                 //Esta = ((HistoriasCoord.get(i).getKeyX() == coordPrueba.X) && (HistoriasCoord.get(i).getKeyY() == coordPrueba.Y));
                 if(Esta == true){
-                    i = HistoriasCoord.size();
+                    i = HistoriasCoord.size()+1;
                     indexListMejorMov++;
                 }
                 System.out.println("HistoriasCoord: " + HistoriasCoord.get(i).getKeyX() + "," + HistoriasCoord.get(i).getKeyY()); 
@@ -475,19 +478,85 @@ public class MiAgente extends SuperAgent {
                 System.out.println("¿Existe?" + Esta); 
             }
             if(Esta == false){
-                mov = arrayMov1[indexListMejorMov];
-                HistoriasCoord.add(coordPrueba);
-                indexListMejorMov = arrayMov1.length;
+                //mov = arrayMov1[indexListMejorMov];
+                //indexListMejorMov = arrayMov1.length+1;
+                salir1 = true;
             }
         }    
-        if(mov == " "){
-            mov = arrayMov1[0];
-            coordPrueba = calculNewGpsPosicion(arrayMov1[0], x, y);
-            HistoriasCoord.add(coordPrueba);
+        if(indexListMejorMov == arrayMov1.length){
+           indexListMejorMov = 0;
+           coordPrueba = calculNewGpsPosicion(arrayMov1[indexListMejorMov], x, y);
         }
         
+        mov = arrayMov1[indexListMejorMov]; 
         return mov;
 
+    }*/
+    
+    
+    public String sigMovimiento(String[] arrayMov1, HistoriaMov HistoriasCoord, int x, int y){
+        
+        String mov;
+        KeyPosition coordPrueba = new KeyPosition(0,0);
+        int indexListMejorMov=0;
+        boolean FueAqui;
+        boolean comparo = true;
+        int i; 
+        
+        //Mientras ya estube aqui y index menor que el tamaño del array
+        while((comparo == true) && (indexListMejorMov < arrayMov1.length))
+        {
+            //coordenadas posibles
+            coordPrueba = calculNewGpsPosicion(arrayMov1[indexListMejorMov], x, y);
+            FueAqui = false;
+            
+            //Para dicha coordenada buscar si ya esta en el vector
+            for (i=0; i< HistoriasCoord.size() && false == FueAqui; i++){
+                
+                FueAqui =  HistoriasCoord.get(i).equals(coordPrueba);
+                
+                //System.out.println("HistoriasCoord: " + HistoriasCoord.get(i).getKeyX() + "," + HistoriasCoord.get(i).getKeyY()); 
+                //System.out.println("CoordPrueba: " + coordPrueba.X + "," + coordPrueba.Y); 
+                //System.out.println("¿Existe?" + FueAqui); 
+                
+                if ( FueAqui == true )
+                {
+                    indexListMejorMov ++;                   
+                }
+            }
+            if(i == HistoriasCoord.size()){
+                comparo = false;
+            }
+            System.out.println(indexListMejorMov);
+            System.out.println(FueAqui);
+        }
+        //if (indexListMejorMov == arrayMov1.length)
+        //{
+        //   indexListMejorMov = 0;
+        //}
+        /*else
+        {
+            // nothing to do 
+        }*/
+
+        mov = arrayMov1[indexListMejorMov]; 
+        return mov;
+
+    }
+    
+    
+    public boolean Existe(KeyPosition k, HistoriaMov HistoriasCoord){
+        boolean FueAqui = false;
+        for (int i=0; i< HistoriasCoord.size(); i++){
+                
+                FueAqui =  HistoriasCoord.get(i).equals(k);
+                
+                if ( FueAqui == true )
+                {
+                    i= HistoriasCoord.size();
+                }
+        }
+        return FueAqui;
     }
     
     /**
@@ -646,8 +715,9 @@ public class MiAgente extends SuperAgent {
     private boolean necesitaRefuel(double alturaActual, double siguienteAltura, double fuelActual){
         boolean necesita = false;
         double necesario = GASTOMOV;
-        double diferenciaAltura = alturaActual - siguienteAltura;
-        
+        //double diferenciaAltura = alturaActual - siguienteAltura;
+        double diferenciaAltura = (alturaActual-siguienteAltura)/5;
+                
         //Convierte el valor a positivo para calcular el gasto total de los movimientos
         if(diferenciaAltura < 0 )
             diferenciaAltura *= -1;
@@ -765,21 +835,27 @@ public class MiAgente extends SuperAgent {
                 //System.out.println(objeto.get("perceptions").asObject().get("gps").asObject().get("y").asInt());
                 key = new KeyPosition(x,y);
                 
+                boolean existe;
                 
-                
+                existe= Existe(key, table);
+                        
+                if(existe == false){                  
+                    table.add(key);                    
+                }
                 
                 //contenedor.put(key , true);   //((120,200), true)
                 System.out.println("Valor X: " + key.getKeyX() + "Valor Y: " + key.getKeyY());
  
                 
                 arrayMov1 = this.masPrometedor(valorAngle);
+                System.out.println("El angulo es: " + valorAngle);
                 for(int i=0;i<(arrayMov1.length);i++){
                     System.out.println(arrayMov1[i]);
                 }
                   
                 //nuevo
                 mov = this.sigMovimiento(arrayMov1,table, key.getKeyX(), key.getKeyY());
-                //table.add(key);
+                
                 
                 //antiguo
                 //mov = this.accionDireccion( valorAngle );
