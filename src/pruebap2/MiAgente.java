@@ -644,7 +644,6 @@ public class MiAgente extends SuperAgent {
         }
         return nuevoMovimiento;
     }
-    
     /**
      * Realiza comprobaciones de altura relativa para bajar
      * @author Juan Francisco Diaz
@@ -798,6 +797,8 @@ public class MiAgente extends SuperAgent {
         String mov = null;
        
         
+                
+        boolean existe;
         
         int x;
         int y;
@@ -835,8 +836,6 @@ public class MiAgente extends SuperAgent {
                 //System.out.println(objeto.get("perceptions").asObject().get("gps").asObject().get("y").asInt());
                 key = new KeyPosition(x,y);
                 
-                boolean existe;
-                
                 existe= Existe(key, table);
                         
                 if(existe == false){                  
@@ -849,6 +848,7 @@ public class MiAgente extends SuperAgent {
                 
                 arrayMov1 = this.masPrometedor(valorAngle);
                 System.out.println("El angulo es: " + valorAngle);
+                
                 for(int i=0;i<(arrayMov1.length);i++){
                     System.out.println(arrayMov1[i]);
                 }
