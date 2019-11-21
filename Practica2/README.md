@@ -10,3 +10,5 @@ Los integrantes del equipo son:
 *  [@Alisaro ](https://github.com/alisaro) - (Alicia Rodríguez)
 *  [@Anarduran ](https://github.com/anarduran) - (Ana Rodriguez)
 *  [@Valseguinau ](https://github.com/valseguinau) - (Valentine)
+
+* [Ensayo PDF](Practica2/Memoria.pdf)
