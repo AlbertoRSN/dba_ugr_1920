@@ -13,4 +13,3 @@ Los integrantes del equipo son:
 
 * [Ensayo PDF](Memoria.pdf)
 
-* ![Memoria](Memoria.pdf)
