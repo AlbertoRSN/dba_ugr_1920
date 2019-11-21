@@ -11,5 +11,6 @@ Los integrantes del equipo son:
 *  [@Anarduran ](https://github.com/anarduran) - (Ana Rodriguez)
 *  [@Valseguinau ](https://github.com/valseguinau) - (Valentine)
 
-* [Ensayo PDF](Memoria.pdf)
+
+[Ensayo en PDF](Memoria.pdf)
 
