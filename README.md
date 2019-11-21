@@ -1,6 +1,6 @@
 # Desarrollo Basado en Agentes
 
- **Practica 2** de la asignatura **"Desarrollo Basado en Agentes"**.
+ Repositorio para las practicas de la asignatura **"Desarrollo Basado en Agentes"**.
 
 
 Los integrantes del equipo son:
