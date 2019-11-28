@@ -5,9 +5,11 @@
  */
 package practica3;
 
+import es.upv.dsic.gti_ia.core.AgentsConnection;
+
 /**
  *
- * @author juanfrandm98
+ * @author Juan Francisco Díaz Moreno
  */
 public class Practica3 {
 
@@ -15,7 +17,27 @@ public class Practica3 {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        
+        AgentsConnection.connect(
+            "isg2.ugr.es",
+             6000,
+             "Practica3",
+             "guest",
+             "guest",
+             false
+        );
+        
+        Interlocutor interlocutor;
+        
+        try {
+            interlocutor = new Interlocutor( new AgentID( "InterlocutorGL" ) );
+        } catch( Exception e ) {
+            System.out.println( "El agente ya existe en la plataforma." );
+            return;
+        }
+        
+        interlocutor.start();
+        
     }
     
 }
