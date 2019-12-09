@@ -31,9 +31,17 @@ public class Practica3 {
         );
         
         Interlocutor interlocutor;
+        DroneBuscador fly;
+        DroneBuscador sparrow;
+        DroneBuscador hawk;
+        DroneRescue rescue;
         
         try {
             interlocutor = new Interlocutor( new AgentID( "InterlocutorGL" ), mapa );
+            fly = new DroneBuscador( new AgentID( "FLY" ) );
+            sparrow = new DroneBuscador( new AgentID( "SPARROW" ) );
+            hawk = new DroneBuscador( new AgentID( "HAWK" ) );
+            rescue = new DroneRescue( new AgentID( "RESCUE" ) );
         } catch( Exception e ) {
             System.out.println( "El agente ya existe en la plataforma." );
             return;

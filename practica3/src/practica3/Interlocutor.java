@@ -73,16 +73,19 @@ public class Interlocutor extends SuperAgent {
             System.out.println( "No se puede recibir el mensaje." );
         }
         
+        if( inbox.getPerformativeInt() == ACLMessage.AGREE )
+            System.out.println( "\nSe ha cerrado sesión." );
+        else
+            System.out.println( "\nNo se ha cerrado sesión." );
+        
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
             
             System.out.println( "\nLogin realizado con éxito." );
             
-            outbox = new ACLMessage();
-            outbox.setSender( this.getAid() );
-            outbox.setReceiver( new AgentID( "Lesath" ) );
-            outbox.setPerformative( ACLMessage.CANCEL );
-            outbox.setConversationId( convId );
-            this.send( outbox );
+            key = inbox.getConversationId().toString();
+            System.out.println( "Recibida key: " + key );
+            
+            enviarKey();
             
             try {
                 inbox = receiveACLMessage();
@@ -91,13 +94,13 @@ public class Interlocutor extends SuperAgent {
                 System.out.println( "No se puede recibir el mensaje." );
             }
             
-            if( inbox.getPerformativeInt() == ACLMessage.AGREE )
-                System.out.println( "\nSe ha cerrado sesión." );
+            if( inbox.getPerformativeInt() == ACLMessage.INFORM )
+                System.out.println( "Se ha recibido la clave." );
             else
-                System.out.println( "\nNo se ha cerrado sesión." );
+                System.out.println( "No se ha recibido la clave." );
             
         } else {
-            System.out.println( "LOGIN NO REALIZADO." );
+            System.out.println( "CLAVE NO RECIBIDA." );
         }
         
     }
@@ -123,6 +126,37 @@ public class Interlocutor extends SuperAgent {
         outbox.setReceiver( new AgentID( "Lesath" ) );
         outbox.setPerformative( ACLMessage.SUBSCRIBE );
         outbox.setContent( mensaje );
+        this.send( outbox );
+        
+    }
+    
+    /**
+       *
+       *  Envío de la clave a los drones
+       *  @Author Alicia Rodríguez, Juan Francisco Díaz Moreno
+       * 
+       */
+    public void enviarKey() {
+        
+        JsonObject objetoJSON = new JsonObject();
+        objetoJSON.add( "key", key );
+        String mensaje = objetoJSON.toString();
+        
+        outbox = new ACLMessage();
+        outbox.setSender( this.getAid() );
+        outbox.setPerformative( ACLMessage.INFORM );
+        outbox.setContent( mensaje );
+        
+        outbox.setReceiver( new AgentID( "FLY" ) );
+        this.send( outbox );
+        
+        outbox.setReceiver( new AgentID( "SPARROW" ) );
+        this.send( outbox );
+        
+        outbox.setReceiver( new AgentID( "HAWK" ) );
+        this.send( outbox );
+        
+        outbox.setReceiver( new AgentID( "RESCUE" ) );
         this.send( outbox );
         
     }
