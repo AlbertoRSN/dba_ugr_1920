@@ -5,6 +5,7 @@
  */
 package practica3;
 
+import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.AgentsConnection;
 
 /**
@@ -18,19 +19,21 @@ public class Practica3 {
      */
     public static void main(String[] args) {
         
+        String mapa = "playground";
+        
         AgentsConnection.connect(
-            "isg2.ugr.es",
-             6000,
+            "isg2.ugr.es",      //host
+             6000,                 //puerto
              "Practica3",
-             "guest",
-             "guest",
-             false
+             "guest",             //username
+             "guest",             //password
+             false                  //SSL
         );
         
         Interlocutor interlocutor;
         
         try {
-            interlocutor = new Interlocutor( new AgentID( "InterlocutorGL" ) );
+            interlocutor = new Interlocutor( new AgentID( "InterlocutorGL" ), mapa );
         } catch( Exception e ) {
             System.out.println( "El agente ya existe en la plataforma." );
             return;
