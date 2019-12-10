@@ -10,6 +10,7 @@ import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,17 +21,27 @@ import java.util.logging.Logger;
 public abstract class AbstractDrone extends SuperAgent {
 
     // Rol del agente
-    String rolname;
+    private String rolname;
+   
+    // ID del servidor
+    private AgentID server = new AgentID( "Lesath" );
     
     // Clave de sesión
-    String key;
+    private String key;
     
     // Conversation ID
-    String convID;
+    private String convID;
+    
+    // Reply
+    private String reply;
     
     // Variables para mensajes
-    ACLMessage outbox;
-    ACLMessage inbox;
+    private ACLMessage outbox;
+    private ACLMessage inbox;
+    
+    // Sensores
+    private JsonObject gps;
+    private double fuel;
     
     /**
        *
@@ -44,6 +55,21 @@ public abstract class AbstractDrone extends SuperAgent {
     public AbstractDrone( AgentID aid ) throws Exception {
         super( aid );
         rolname = this.getAid().name;
+        inicializarSensores();
+    }
+    
+    /**
+       * 
+       * Función que inicializa los objetos que almacenarán los datos de los sensores
+       * @Author Juan Francisco Díaz Moreno 
+       * 
+       */
+    public void inicializarSensores() {
+        
+        gps = new JsonObject();
+        gps.add( "x", 0 );
+        gps.add( "y", 0 );
+        gps.add( "z", 0 );
     }
     
     @Override
@@ -71,6 +97,9 @@ public abstract class AbstractDrone extends SuperAgent {
             JsonObject objeto = Json.parse( this.inbox.getContent() ).asObject();
             key = objeto.get( "key" ).asString();
             System.out.println( "key -> " + key );
+            
+            convID = "CONV-" + key;
+            reply = "REPLY-" + key;
             
             enviarOK();
         }
@@ -103,6 +132,46 @@ public abstract class AbstractDrone extends SuperAgent {
        * 
        */
     public abstract void actuacion();
+    
+    /**
+       *
+       *  Función que actualiza la percepción del drone
+       *  @Author Juan Francisco Díaz Moreno
+       * 
+       */
+    public void actualizarPercepcion() {
+        
+        // Envío de la solicitud
+        outbox = new ACLMessage();
+        outbox.setPerformative( ACLMessage.QUERY_REF );
+        outbox.setSender( this.getAid() );
+        outbox.addReceiver( server );
+        outbox.setConversationId(key);
+        outbox.setInReplyTo( reply );
+        
+        this.send( outbox );
+        
+        // Recepción del mensaje
+        do {
+            try {
+                inbox = this.receiveACLMessage();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } while( inbox.getPerformativeInt() != ACLMessage.INFORM );
+        
+        JsonObject percepcion = ( Json.parse( inbox.getContent() ).asObject() );
+        
+        // GPS
+        JsonObject coordenadas = percepcion.get( "gps" ).asObject();
+        gps.add( "x", coordenadas.get( "x" ).asInt() );
+        gps.add( "y", coordenadas.get( "y" ).asInt() );
+        gps.add( "z", coordenadas.get( "z" ).asInt() );
+        
+        // FUEL
+        fuel = percepcion.get( "fuel" ).asDouble();
+        
+    }
     
     @Override
     public void finalize() {

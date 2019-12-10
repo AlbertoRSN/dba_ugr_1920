@@ -13,8 +13,12 @@ import es.upv.dsic.gti_ia.core.AgentID;
  */
 public class DroneRescue extends AbstractDrone {
     
+    // Estado del drone
+    EstadoRescue estado;
+    
     public DroneRescue( AgentID aid ) throws Exception {
         super( aid );
+        estado = EstadoRescue.OCIOSO;
     }
     
     /**
@@ -25,10 +29,22 @@ public class DroneRescue extends AbstractDrone {
        */
     public void actuacion() {
         
-        // Comprueba si está encima de un alemán
-        // Comprueba si se ha detectado algún alemán
-        //      Si se ha detectado -> Movimiento hacia el más cercano
-        //      Si no se ha detectado -> Espera
+        // SOLICITA PERCEPCIÓN
+        
+        // COMPRUEBA SI ESTÁ ENCIMA DE ALEMÁN
+        
+        // ESTADO == OCIOSO
+        //      ESPERA
+        
+        // ESTADO == MOVIENDO
+        //      SELECCIONA MEJOR MOVIMIENTO
+        //      SE MUEVE
+        
+        // ESTADO == OBJETIVO
+        //      SI ESTÁ AL NIVEL DEL SUELO
+        //          RECOGE ALEMÁN
+        //      NO LO ESTÁ
+        //          BAJA
         
     }
     
