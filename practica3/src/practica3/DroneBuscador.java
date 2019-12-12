@@ -8,17 +8,18 @@ package practica3;
 import es.upv.dsic.gti_ia.core.AgentID;
 
 /**
- *
- * @author juanfrandm98
+ * Clase principal para el dron de rescate
+ * 
+ * @author Juan Francisco Diaz
  */
 public class DroneBuscador extends AbstractDrone {
     
-    public DroneBuscador( AgentID aid ) throws Exception {
-        super( aid );
+    public DroneBuscador(AgentID aid) throws Exception {
+        super(aid);
     }
     
+    @Override
     public void actuacion() {
         
     }
-    
 }

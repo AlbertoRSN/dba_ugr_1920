@@ -8,25 +8,25 @@ package practica3;
 import es.upv.dsic.gti_ia.core.AgentID;
 
 /**
- *
- * @author juanfrandm98
+ * Clase principal para el dron de rescate
+ * 
+ * @author Juan Francisco Díaz
  */
 public class DroneRescue extends AbstractDrone {
     
     // Estado del drone
     EstadoRescue estado;
     
-    public DroneRescue( AgentID aid ) throws Exception {
-        super( aid );
+    public DroneRescue(AgentID aid) throws Exception {
+        super(aid);
         estado = EstadoRescue.OCIOSO;
     }
     
     /**
-       * 
-       * Actuación del Drone Rescue
-       * @Author Juan Francisco Díaz Moreno
-       * 
-       */
+     * Actuacion del drone Rescue
+     * 
+     * @author Juan Francisco Diaz Moreno
+     */
     public void actuacion() {
         
         // SOLICITA PERCEPCIÓN
@@ -44,8 +44,6 @@ public class DroneRescue extends AbstractDrone {
         //      SI ESTÁ AL NIVEL DEL SUELO
         //          RECOGE ALEMÁN
         //      NO LO ESTÁ
-        //          BAJA
-        
+        //          BAJA   
     }
-    
 }

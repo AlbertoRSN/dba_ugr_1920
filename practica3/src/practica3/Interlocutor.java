@@ -6,169 +6,175 @@
 package practica3;
 
 import DBA.SuperAgent;
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author Juan Francisco Díaz Moreno, Alberto Rodríguez
+ * Clase principal para elinterlocutor que se comunica con el servidor
+ * 
+ * @author Juan Francisco Diaz Moreno, Alberto Rodriguez, Ana Rodriguez
  */
 public class Interlocutor extends SuperAgent {
     
-    // Mapa que vamos a usar
+    //Mapa que vamos a usar
     String mapa;
-    
-    // Clave de sesión
+    //Clave de sesion
     String key;
-    
-    // Variables para mensajes
+    //Variables para mensajes
     ACLMessage outbox = null;
-    ACLMessage inbox    = null;
+    ACLMessage inbox = null;
     
-    // Conversation ID
+    //Conversation ID
     String convId = "";
     
     /**
-     * 
      *  Constructor de la clase Interlocutor
-     *  @author Juan Francisco Díaz Moreno, Alberto Rodríguez
+     * 
      *  @param aid Identificador del agente
-     *  @param map Mapa que se va a trabajar
+     *  @param mapa Mapa que se va a trabajar
      *  @throws Exception
      * 
+     *  @author Juan Francisco Diaz Moreno, Alberto Rodriguez
      */
-    public Interlocutor( AgentID aid, String mapa ) throws Exception {
-        super( aid );
+    public Interlocutor(AgentID aid, String mapa) throws Exception {
+        super(aid);
         this.mapa = mapa;
     }
     
-    /**
-     * 
-     * @author Alberto Rodríguez
-     * 
-     */
     @Override
     public void init() {
-        System.out.println( "\n\nInicializando el agente -> " + this.getName() );
+        System.out.println("\n\nInicializando el agente -> " + this.getName() );
     }
     
     /**
-     *  
-     *  @author Alberto Rodríguez
-     *  
+     *  @author Alberto Rodriguez
      */
     @Override
     public void execute() {
         
-        // Enviar mensaje de login
+        //Enviar mensaje de login
         login();
         
         try {
             inbox = receiveACLMessage();
-        } catch( InterruptedException ex ) {
-            Logger.getLogger( Interlocutor.class.getName() ).log( Level.SEVERE, null, ex );
-            System.out.println( "No se puede recibir el mensaje." );
+        } catch(InterruptedException ex) {
+            Logger.getLogger(Interlocutor.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("No se puede recibir el mensaje.");
         }
         
-        if( inbox.getPerformativeInt() == ACLMessage.AGREE )
-            System.out.println( "\nSe ha cerrado sesión." );
+        if(inbox.getPerformativeInt() == ACLMessage.AGREE)
+            System.out.println("\nSe ha cerrado sesion.");
         else
-            System.out.println( "\nNo se ha cerrado sesión." );
+            System.out.println("\nNo se ha cerrado sesion.");
         
-        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+        if(inbox.getPerformativeInt() == ACLMessage.INFORM) {
+            System.out.println("\nLogin realizado con exito.");
             
-            System.out.println( "\nLogin realizado con éxito." );
-            
-            key = inbox.getConversationId().toString();
-            System.out.println( "Recibida key: " + key );
-            
+            key = inbox.getConversationId();
+            System.out.println("Recibida key: " + key);
             enviarKey();
             
             try {
                 inbox = receiveACLMessage();
-            } catch( InterruptedException ex ) {
-                Logger.getLogger( Interlocutor.class.getName() ).log( Level.SEVERE, null, ex );
-                System.out.println( "No se puede recibir el mensaje." );
+            } catch(InterruptedException ex) {
+                Logger.getLogger(Interlocutor.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("No se puede recibir el mensaje.");
             }
             
-            if( inbox.getPerformativeInt() == ACLMessage.INFORM )
-                System.out.println( "Se ha recibido la clave." );
+            if(inbox.getPerformativeInt() == ACLMessage.INFORM)
+                System.out.println("Se ha recibido la clave.");
             else
-                System.out.println( "No se ha recibido la clave." );
+                System.out.println("No se ha recibido la clave.");
             
         } else {
-            System.out.println( "CLAVE NO RECIBIDA." );
+            System.out.println("CLAVE NO RECIBIDA.");
         }
-        
     }
     
     /**
+     *  Envio del mensaje para hacer login
      * 
-     *  Envío del mensaje para hacer login
-     *  @author Alberto Rodríguez
-     * 
+     *  @author Alberto Rodriguez
      */
     public void login() {
         
         JsonObject objetoJSON = new JsonObject();
-        objetoJSON.add( "map", mapa );
-        objetoJSON.add( "user", "Lackey" );
-        objetoJSON.add( "password", "iVwGdxOa");
+        objetoJSON.add("map", mapa);
+        objetoJSON.add("user", "Lackey");
+        objetoJSON.add("password","iVwGdxOa");
         
         String mensaje = objetoJSON.toString();
         
-        /* envío */
+        //Envio
         outbox = new ACLMessage();
-        outbox.setSender( this.getAid() );
-        outbox.setReceiver( new AgentID( "Lesath" ) );
-        outbox.setPerformative( ACLMessage.SUBSCRIBE );
-        outbox.setContent( mensaje );
-        this.send( outbox );
-        
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(new AgentID("Lesath"));
+        outbox.setPerformative(ACLMessage.SUBSCRIBE);
+        outbox.setContent(mensaje);
+        this.send(outbox);
     }
     
     /**
-       *
-       *  Envío de la clave a los drones
-       *  @Author Alicia Rodríguez, Juan Francisco Díaz Moreno
-       * 
-       */
+     *  Envio de la clave a los drones
+     * 
+     *  @author Alicia Rodriguez, Juan Francisco Diaz Moreno
+     */
     public void enviarKey() {
         
         JsonObject objetoJSON = new JsonObject();
-        objetoJSON.add( "key", key );
+        objetoJSON.add("key", key);
         String mensaje = objetoJSON.toString();
         
         outbox = new ACLMessage();
-        outbox.setSender( this.getAid() );
-        outbox.setPerformative( ACLMessage.INFORM );
-        outbox.setContent( mensaje );
+        outbox.setSender(this.getAid());
+        outbox.setPerformative(ACLMessage.INFORM);
+        outbox.setContent(mensaje);
         
-        outbox.setReceiver( new AgentID( "FLY" ) );
-        this.send( outbox );
+        outbox.setReceiver(new AgentID("FLY"));
+        this.send(outbox);
         
-        outbox.setReceiver( new AgentID( "SPARROW" ) );
-        this.send( outbox );
+        outbox.setReceiver(new AgentID("SPARROW"));
+        this.send(outbox);
         
-        outbox.setReceiver( new AgentID( "HAWK" ) );
-        this.send( outbox );
+        outbox.setReceiver(new AgentID("HAWK"));
+        this.send(outbox);
         
-        outbox.setReceiver( new AgentID( "RESCUE" ) );
-        this.send( outbox );
-        
+        outbox.setReceiver(new AgentID("RESCUE"));
+        this.send(outbox);
     }
     
-    /**
-     * 
-     *  @Author Alberto Rodríguez
-     * 
+     /**
+     * Crea una imagen a partir de la traza recibida
+     * @author Ana Rodriguez
+     * @param jsObjeto nombre del objeto con la traza
      */
+    public void crearTraza(JsonObject jsObjeto){
+        try{
+            System.out.println("\nRecibiendo traza");
+            JsonArray ja = jsObjeto.get("trace").asArray();
+            byte data[] = new byte[ja.size()];
+            for(int i=0; i<data.length; i++){
+                data[i] = (byte) ja.get(i).asInt();
+            }
+            try (FileOutputStream fos = new FileOutputStream(mapa+".png")) {
+                fos.write(data);
+            }
+            System.out.println("¡Bravo! Traza guardada :)");
+        }catch (IOException ex){
+            System.err.println("Error al procesar la traza");
+        }
+    }
+    
     @Override
     public void finalize() {
         super.finalize();
-    }
-    
+    }   
 }

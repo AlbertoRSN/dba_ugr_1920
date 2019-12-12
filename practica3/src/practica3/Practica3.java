@@ -9,8 +9,9 @@ import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.AgentsConnection;
 
 /**
- *
- * @author Juan Francisco Díaz Moreno
+ * Clase principal de la practica 3
+ * 
+ * @author Juan Francisco Diaz Moreno
  */
 public class Practica3 {
 
@@ -22,12 +23,12 @@ public class Practica3 {
         String mapa = "playground";
         
         AgentsConnection.connect(
-            "isg2.ugr.es",      //host
-             6000,                 //puerto
-             "Practica3",
-             "guest",             //username
-             "guest",             //password
-             false                  //SSL
+            "isg2.ugr.es",  //host
+            6000,           //puerto
+            "Practica3",
+            "guest",        //username
+            "guest",        //password
+            false           //SSL
         );
         
         Interlocutor interlocutor;
@@ -37,18 +38,15 @@ public class Practica3 {
         DroneRescue rescue;
         
         try {
-            interlocutor = new Interlocutor( new AgentID( "InterlocutorGL" ), mapa );
-            fly = new DroneBuscador( new AgentID( "FLY" ) );
-            sparrow = new DroneBuscador( new AgentID( "SPARROW" ) );
-            hawk = new DroneBuscador( new AgentID( "HAWK" ) );
-            rescue = new DroneRescue( new AgentID( "RESCUE" ) );
-        } catch( Exception e ) {
-            System.out.println( "El agente ya existe en la plataforma." );
+            interlocutor = new Interlocutor(new AgentID("Interlocutor-GL"), mapa);
+            fly = new DroneBuscador(new AgentID("FLY"));
+            sparrow = new DroneBuscador(new AgentID("SPARROW"));
+            hawk = new DroneBuscador(new AgentID("HAWK"));
+            rescue = new DroneRescue(new AgentID("RESCUE"));
+        } catch(Exception e) {
+            System.out.println("\n\nERROR. El agente ya existe en la plataforma.");
             return;
         }
-        
-        interlocutor.start();
-        
-    }
-    
+        interlocutor.start();   
+    }   
 }

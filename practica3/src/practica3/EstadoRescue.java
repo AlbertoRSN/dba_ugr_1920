@@ -6,9 +6,9 @@
 package practica3;
 
 /**
- *
- * @author Juan Francisco Díaz Moreno
+ * Estados del dron de rescate
  * 
+ * @author Juan Francisco Diaz Moreno
  */
 public enum EstadoRescue {
     OCIOSO,
