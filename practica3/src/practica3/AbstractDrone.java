@@ -76,6 +76,8 @@ public abstract class AbstractDrone extends SuperAgent {
      *  @author Juan Francisco Diaz Moreno
      */
     public void execute() {
+        
+        //Comienza escuchando
         try {
             inbox = receiveACLMessage();
         } catch(InterruptedException ex) {
@@ -92,7 +94,7 @@ public abstract class AbstractDrone extends SuperAgent {
             convID = "CONV-" + key;
             reply = "REPLY-" + key;
             
-            enviarOK();
+            this.enviarOK();
         }
     }
     
@@ -134,7 +136,7 @@ public abstract class AbstractDrone extends SuperAgent {
         outbox.setPerformative(ACLMessage.QUERY_REF);
         outbox.setSender(this.getAid());
         outbox.addReceiver(server);
-        outbox.setConversationId(key);
+        outbox.setConversationId(convID);
         outbox.setInReplyTo(reply);
         
         this.send(outbox);
@@ -163,20 +165,64 @@ public abstract class AbstractDrone extends SuperAgent {
     /**
      *  Funcion que calcula la posicion inicial de los drones
      * 
-     *  @author Ana Rodriguez Duran
+     *  @author Ana Rodriguez Duran, Alberto Rodriguez
      */
-    public void calcularPosicion(){
-        ArrayList<Integer> posicion = null;
-        //El halcon lo ponemos en el medio
-        int x=50,y=50;
+    public void calcularPosicion(){        
+        //segun rolname sacamos el drone en una pos u otra
         
-        //comprobar la altura maxima y si no la superamos
-        posicion.add(x);
-        posicion.add(y);
+        if(this.rolname == "FLY"){
+            //Colocamos en la esquina superior izquierda + su visibilidad
+            
+        }
+    }
+    
+    /**
+     *  Funcion para repostar
+     * 
+     *  @author Alberto Rodriguez
+     */
+    public void refuel(){
+        JsonObject objetoJson = new JsonObject();
+        objetoJson.add("command", "refuel");
         
+        String mensaje = objetoJson.toString();
+        //Envio de la solicitud de repostaje
+        outbox = new ACLMessage();
+        outbox.setPerformative(ACLMessage.REQUEST);
+        outbox.setSender(this.getAid());
+        outbox.addReceiver(server);
+        outbox.setContent(mensaje);
+        outbox.setConversationId(convID);
+        outbox.setInReplyTo(reply);
         
+        this.send(outbox);
+        
+        try {
+            inbox = this.receiveACLMessage();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //Si recibo inform, repostar
+        if(inbox.getPerformativeInt() == ACLMessage.INFORM){
+            
+            
+            //Fuel global, restarle lo que hemos añadido al agente
+            //FuelTotal -= this.fuel;
+            
+            //Actualizo el fuel del drone.
+            this.fuel = 100;
+            System.out.println("HOLA HE REPOSTADO!!!!!");
+            
+        }
+        else{
+            JsonObject objeto = Json.parse(this.inbox.getContent()).asObject();
+            System.out.println(objeto.get("result").asString());
+        }
         
     }
+    
+    
     
     @Override
     public void finalize() {

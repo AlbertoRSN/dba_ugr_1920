@@ -47,6 +47,12 @@ public class Practica3 {
             System.out.println("\n\nERROR. El agente ya existe en la plataforma.");
             return;
         }
-        interlocutor.start();   
+        
+        //Lanzamos los agentes
+        interlocutor.start();
+        fly.start();
+        sparrow.start();
+        hawk.start();
+        rescue.start();
     }   
 }
