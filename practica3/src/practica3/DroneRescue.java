@@ -15,11 +15,46 @@ import es.upv.dsic.gti_ia.core.AgentID;
 public class DroneRescue extends AbstractDrone {
     
     // Estado del drone
-    EstadoRescue estado;
+    private EstadoRescue estado;
     
-    public DroneRescue(AgentID aid) throws Exception {
+    // Variables que controlan el número de alemanes del mapa
+    private int alemanesIniciales;
+    private int alemanesRescatados;
+    
+    public DroneRescue( AgentID aid ) throws Exception {
         super(aid);
+        
         estado = EstadoRescue.OCIOSO;
+        alemanesRescatados = 0;
+    }
+    
+    /**
+       *
+       *  Funcion que establece el numero de alemanes que hay en el mapa inicialmente.
+       * 
+       * @Author Juan Francisco Diaz Moreno
+       * 
+       */
+    public void setAlemanesIniciales( int alemanesIniciales ) {
+        this.alemanesIniciales = alemanesIniciales;
+    }
+    
+    /**
+       *
+       * Funcion que comprueba si todos los alemanes se han rescatado ya
+       * 
+       * @Author Juan Francisco Diaz Moreno
+       * 
+       */
+    public boolean todosRescatados() {
+      
+        boolean rescatados = false;
+        
+        if( alemanesIniciales == alemanesRescatados )
+            rescatados = true;
+        
+        return rescatados;
+        
     }
     
     /**
@@ -29,6 +64,11 @@ public class DroneRescue extends AbstractDrone {
      */
     public void actuacion() {
         
+        while( !todosRescatados() ) {
+            
+            
+            
+        }
         // SOLICITA PERCEPCIÓN
         
         // COMPRUEBA SI ESTÁ ENCIMA DE ALEMÁN
