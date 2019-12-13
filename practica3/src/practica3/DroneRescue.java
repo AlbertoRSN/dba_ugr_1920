@@ -21,8 +21,8 @@ public class DroneRescue extends AbstractDrone {
     private int alemanesIniciales;
     private int alemanesRescatados;
     
-    public DroneRescue( AgentID aid ) throws Exception {
-        super(aid);
+    public DroneRescue( AgentID aid, String mapa ) throws Exception {
+        super( aid, mapa );
         
         estado = EstadoRescue.OCIOSO;
         alemanesRescatados = 0;
