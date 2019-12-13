@@ -7,9 +7,11 @@ package practica3;
 
 import DBA.SuperAgent;
 import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +25,16 @@ public abstract class AbstractDrone extends SuperAgent {
 
     //Rol del agente
     private String rolname;
+    // Visibilidad
+    private int visibilidad;
+    // Rango
+    private int rango;
+    // Altura máximo
+    int alturaMax;
+    // Mapa
+    private String nombreMapa;
+    private DBAMap map;
+    
     //ID del servidor
     private AgentID server = new AgentID("Lesath");
     //Clave de sesión
@@ -31,14 +43,33 @@ public abstract class AbstractDrone extends SuperAgent {
     private String convID;
     //Reply
     private String reply;
+    // Session
+    private String session;
     
     //Variables para mensajes
     private ACLMessage outbox;
     private ACLMessage inbox;
     
     // Sensores
-    private JsonObject gps;
+    private int posx, posy, posz;
     private double fuel;
+    private double gonioDistancia;
+    private double gonioAngulo;
+    private JsonArray infrared;
+    private JsonArray awacs;
+    private String status;
+    private boolean goal;
+    private int torescue;
+    private int energy;
+    
+    
+    // Alemanes
+    private int alemanesTotales;
+    private int alemanesEncontrados;
+    private int alemanesRescatados;
+    
+    // Coordenadas objetivo para el desplazamiento
+    private int objetivox, objetivoy;
     
     /**
      * Constructor de la clase principal. Crea un nuevo Agente
@@ -47,22 +78,103 @@ public abstract class AbstractDrone extends SuperAgent {
      * 
      * @author Alicia Rodriguez 
      */
-    public AbstractDrone(AgentID aid) throws Exception {
+    public AbstractDrone(AgentID aid, String mapa ) throws Exception {
         super(aid);
         rolname = this.getAid().name;
-        inicializarSensores();
+        nombreMapa = mapa;
+        inicializarNumeroAlemanes();
+        inicializarCaracteristicas();
+        inicializarMapa();
+        inicializarPosicion();
     }
     
     /**
-     * Funcion que inicializa los objetos que almacenaran los datos de los sensores
-     * 
-     * @Author Juan Francisco Diaz Moreno 
-     */
-    public void inicializarSensores() {
-        gps = new JsonObject();
-        gps.add("x", 0);
-        gps.add("y", 0);
-        gps.add("z", 0);
+      *
+      * Funcion que inicializa el numero de alemanes en funcion del mapa
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    private void inicializarNumeroAlemanes() {
+        
+        alemanesEncontrados = alemanesRescatados = 0;
+        
+        switch( nombreMapa ) {
+            case "playground":
+                alemanesTotales = 4;
+                break;
+            case "map1":
+                alemanesTotales = 5;
+                break;
+            case "map2":
+                alemanesTotales = 5;
+                break;
+            case "map3":
+                alemanesTotales = 6;
+                break;
+            case "map4":
+                alemanesTotales = 8;
+                break;
+            case "map5":
+                alemanesTotales = 10;
+                break;
+                
+        }
+    }
+    
+    /**
+      *
+      * Funcion que inicializa las caracteristicas del drone en funcion de su
+      * rol (visibilidad, rango y altura maximo)
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    private void inicializarCaracteristicas() {
+        
+        switch( rolname ) {
+            case "FLY":
+                alturaMax = 255;
+                visibilidad = 20;
+                rango = 5;
+                break;
+            case "SPARROW":
+                alturaMax = 240;
+                visibilidad = 50;
+                rango = 11;
+                break;
+            case "HAWK":
+                alturaMax = 230;
+                visibilidad = 100;
+                rango = 41;
+                break;
+            case "RESCUE":
+                alturaMax = 255;
+                visibilidad = 1;
+                rango = 1;
+                break;
+        }
+        
+    }
+    
+    /**
+      *
+      * Funcion que carga el mapa
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    private void inicializarMapa() {
+        
+        map = new DBAMap();
+        
+        try {
+            map.load( "./maps/"+ nombreMapa +"GL.png" );
+        } catch (IOException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println( "\n\nERROR: no se pudo cargar el mapa.\n" );
+        }
+        
     }
     
     @Override
@@ -89,6 +201,7 @@ public abstract class AbstractDrone extends SuperAgent {
             System.out.println("\nRegistro realizado con éxito para: " + this.rolname);
             JsonObject objeto = Json.parse(this.inbox.getContent()).asObject();
             key = objeto.get("key").asString();
+            session = objeto.get( "session" ).asString();
             System.out.println("key -> " + key);
             
             convID = "CONV-" + key;
@@ -96,6 +209,42 @@ public abstract class AbstractDrone extends SuperAgent {
             
             this.enviarOK();
         }
+        
+        checkin();
+        actuacion();
+    }
+    
+    /**
+      *
+      * Funcion para realizar el checkin, es decir, situar los drones en el mapa
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    private void checkin() {
+        
+        System.out.println( rolname + " inicializando CHECKIN..." );
+        
+        outbox = new ACLMessage();
+        outbox.setPerformative( ACLMessage.REQUEST );
+        outbox.setConversationId( convID );
+        outbox.setSender( this.getAid() );
+        outbox.setReceiver( server );
+        
+        JsonObject objeto = new JsonObject();
+        objeto.add( "command", "checkin" );
+        objeto.add( "session", session );
+        objeto.add( "rol", rolname );
+        objeto.add( "x", posx );
+        objeto.add( "y", posy );
+        
+        String content = objeto.toString();
+        outbox.setContent( content );
+        
+        this.send( outbox );
+        
+        System.out.println( rolname + " enviando " + content );
+        
     }
     
     /**
@@ -154,26 +303,64 @@ public abstract class AbstractDrone extends SuperAgent {
         
         //GPS
         JsonObject coordenadas = percepcion.get("gps").asObject();
-        gps.add("x", coordenadas.get("x").asInt());
-        gps.add("y", coordenadas.get("y" ).asInt());
-        gps.add("z", coordenadas.get("z").asInt());
+        posx = coordenadas.get("x").asInt();
+        posy = coordenadas.get("y").asInt();
+        posz = coordenadas.get("z").asInt();
         
         // FUEL
         fuel = percepcion.get("fuel").asDouble();
+        
+        // GONIO
+        JsonObject gonio = percepcion.get( "gonio" ).asObject();
+        gonioDistancia = gonio.get( "distance" ).asDouble();
+        gonioAngulo = gonio.get( "angle" ).asDouble();
+        
+        // INFRARED
+        infrared = percepcion.get( "infrared" ).asArray();
+        
+        // AWACS
+        awacs = percepcion.get( "awacs" ).asArray();
+        
+        // STATUS
+        status = percepcion.get( "status" ).asString();
+        
+        // GOAL
+        goal = percepcion.get( "goal" ).asBoolean();
+        
+        // TORESCUE
+        torescue = percepcion.get( "torescue" ).asInt();
+        
+        // ENERGY
+        energy = percepcion.get( "energy" ).asInt();
+
     }
     
     /**
      *  Funcion que calcula la posicion inicial de los drones
      * 
-     *  @author Ana Rodriguez Duran, Alberto Rodriguez
+     *  @author Ana Rodriguez Duran, Alberto Rodriguez, Juan Francisco Diaz Moreno
      */
-    public void calcularPosicion(){        
+    public void inicializarPosicion(){        
         //segun rolname sacamos el drone en una pos u otra
         
-        if(this.rolname == "FLY"){
-            //Colocamos en la esquina superior izquierda + su visibilidad
-            
+        switch( rolname ) {
+            case "FLY":
+                posx = visibilidad;
+                posy = map.getHeight() - visibilidad;
+                break;
+            case "SPARROW":
+                posx = map.getWidth() - visibilidad;
+                posy = visibilidad;
+                break;
+            case "HAWK":
+                posx = map.getWidth() / 2;
+                posy = map.getHeight() / 2;
+                break;
+            case "RESCUE":
+                posx = map.getWidth() / 2;
+                posy = ( map.getHeight() / 2 ) + 1;
         }
+        
     }
     
     /**
@@ -222,7 +409,151 @@ public abstract class AbstractDrone extends SuperAgent {
         
     }
     
+    public boolean alemanVisualizado() {
+        return ( gonioDistancia != -1 );
+    }
     
+    public JsonObject calcularPosicion() {
+        JsonObject coordenadas = new JsonObject();
+        
+        double difx = Math.cos( Math.toRadians( gonioAngulo ) ) * gonioDistancia;
+        double dify = Math.sin( Math.toRadians( gonioAngulo ) ) * gonioDistancia;
+        
+        //if( gonioAngulo >= 0 && <=)
+        
+        return coordenadas;
+    }
+    
+    public abstract String calcularSiguienteMovimiento();
+    
+    public void mover() {
+        
+        String movimiento = calcularSiguienteMovimiento();
+        
+        JsonObject command = new JsonObject();
+        command.add( "command", movimiento );
+        
+        outbox = new ACLMessage();
+        outbox.setSender( this.getAid() );
+        outbox.setReceiver( server );
+        outbox.setPerformative( ACLMessage.REQUEST );
+        outbox.setContent( command.toString() );
+        outbox.setConversationId( convID );
+        outbox.setInReplyTo( reply );
+        
+        this.send( outbox );
+        
+    }
+    
+    /**
+      *
+      * Getter de rolname
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public String getRolname() {
+        return rolname;
+    }
+    
+    /**
+      *
+      * Getter de posx
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public int getPosx() {
+        return posx;
+    }
+    
+    /**
+      *
+      * Getter de posy
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public int getPosy() {
+        return posy;
+    }
+    
+    /**
+      *
+      * Getter de visibilidad
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public int getVisibilidad() {
+        return visibilidad;
+    }
+    
+    /**
+      *
+      * Getter de alemanesTotales
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public int getAlemanesTotales() {
+        return alemanesTotales;
+    }
+    
+    /**
+      *
+      * Getter de alemanesEncontrados
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public int getAlemanesEncontrados() {
+        return alemanesEncontrados;
+    }
+    
+    /**
+      *
+      * Getter de alemanesRescatados
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public int getAlemanesRescatados() {
+        return alemanesRescatados;
+    }
+    
+    /**
+      *
+      * Getter de map
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public DBAMap getMap() {
+        return map;
+    }
+    
+    /**
+      *
+      * Setter de objetivox
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public void setObjetivox( int coordenada ) {
+        objetivox = coordenada;
+    }
+    
+    /**
+      *
+      * Setter de objetivoy
+      * 
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    public void setObjetivoy( int coordenada ) {
+        objetivoy = coordenada;
+    }
     
     @Override
     public void finalize() {
