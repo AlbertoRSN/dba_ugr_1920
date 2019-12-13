@@ -39,10 +39,10 @@ public class Practica3 {
         
         try {
             interlocutor = new Interlocutor(new AgentID("Interlocutor-GL"), mapa);
-            fly = new DroneBuscador(new AgentID("FLY"));
-            sparrow = new DroneBuscador(new AgentID("SPARROW"));
-            hawk = new DroneBuscador(new AgentID("HAWK"));
-            rescue = new DroneRescue(new AgentID("RESCUE"));
+            fly = new DroneBuscador(new AgentID("FLY"), mapa );
+            sparrow = new DroneBuscador(new AgentID("SPARROW"), mapa );
+            hawk = new DroneBuscador(new AgentID("HAWK"), mapa );
+            rescue = new DroneRescue(new AgentID("RESCUE"), mapa );
         } catch(Exception e) {
             System.out.println("\n\nERROR. El agente ya existe en la plataforma.");
             return;
