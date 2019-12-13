@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Practica 3
+ * Grupo L
  */
 package practica3;
 
@@ -12,20 +11,16 @@ import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Clase principal para elinterlocutor que se comunica con el servidor
+ * Clase principal para el interlocutor que se comunica con el servidor
  * 
  * @author Juan Francisco Diaz Moreno, Alberto Rodriguez, Ana Rodriguez
  */
 public class Interlocutor extends SuperAgent {
-    
     //Mapa que vamos a usar
     String mapa;
     //Clave de sesion
@@ -40,20 +35,17 @@ public class Interlocutor extends SuperAgent {
     static String _filename="map100x100";
     
     DBAMap map = new DBAMap();
-    
-    
-    
+
     //Conversation ID
     String convId = "";
     
     /**
-     *  Constructor de la clase Interlocutor
+     * Constructor de la clase Interlocutor
+     * @param aid Identificador del agente
+     * @param mapa Mapa que se va a trabajar
+     * @throws Exception
      * 
-     *  @param aid Identificador del agente
-     *  @param mapa Mapa que se va a trabajar
-     *  @throws Exception
-     * 
-     *  @author Juan Francisco Diaz Moreno, Alberto Rodriguez
+     * @author Juan Francisco Diaz Moreno, Alberto Rodriguez
      */
     public Interlocutor(AgentID aid, String mapa) throws Exception {
         super(aid);
@@ -66,11 +58,12 @@ public class Interlocutor extends SuperAgent {
     }
     
     /**
-     *  @author Alberto Rodriguez
+     * Funcion execute
+     * 
+     * @author Alberto Rodriguez
      */
     @Override
     public void execute() {
-        
         //Enviar mensaje de login
         login();
         
@@ -111,8 +104,6 @@ public class Interlocutor extends SuperAgent {
             
             //Tratamos el mapa
             tratarMapa(objeto);
-
-                
             
             key = inbox.getConversationId();
             System.out.println("Recibida key: " + key);
@@ -142,9 +133,9 @@ public class Interlocutor extends SuperAgent {
     }
     
     /**
-     *  Envio del mensaje para hacer login
+     * Envio del mensaje para hacer login
      * 
-     *  @author Alberto Rodriguez
+     * @author Alberto Rodriguez
      */
     public void login() {
         
@@ -170,7 +161,6 @@ public class Interlocutor extends SuperAgent {
      *  @author Alicia Rodriguez, Juan Francisco Diaz Moreno, Alberto Rodriguez, Ana Rodriguez Duran
      */
     public void enviarKey() {
-        
         JsonObject objetoJSON = new JsonObject();
         objetoJSON.add("key", key);
         objetoJSON.add( "session", session );
@@ -195,12 +185,12 @@ public class Interlocutor extends SuperAgent {
         this.send(outbox);
     }
     
-    
     /**
      * Funcion para tratar el mapa en forma de imagen
+     * @param objeto json que le pasamos para convertir en jsonArray
+     * 
      * @author Luis Castillo
      * @coauthor Alberto Rodriguez (Adaptacion del codigo)
-     * @param objeto json que le pasamos para convertir en jsonArray
      */
     public void tratarMapa(JsonObject objeto){
     System.out.println("\n\n-------- TRATANDO EL MAPA ----------\nReading json file "+"./json/"+_filename+".json");
@@ -240,28 +230,4 @@ public class Interlocutor extends SuperAgent {
     public void finalize() {
         super.finalize();
     }   
-    
-//     /**
-//     * Crea una imagen a partir de la traza recibida
-//     * @author Ana Rodriguez
-//     * @param jsObjeto nombre del objeto con la traza
-//     */
-//    public void crearTraza(JsonObject jsObjeto){
-//        try{
-//            System.out.println("\nRecibiendo traza");
-//            JsonArray ja = jsObjeto.get("trace").asArray();
-//            byte data[] = new byte[ja.size()];
-//            for(int i=0; i<data.length; i++){
-//                data[i] = (byte) ja.get(i).asInt();
-//            }
-//            try (FileOutputStream fos = new FileOutputStream(mapa+".png")) {
-//                fos.write(data);
-//            }
-//            System.out.println("¡Bravo! Traza guardada :)");
-//        }catch (IOException ex){
-//            System.err.println("Error al procesar la traza");
-//        }
-//    }
-//    
-    
 }

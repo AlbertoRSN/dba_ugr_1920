@@ -101,7 +101,6 @@ public class DBAMap {
     }
 
     /**
-     * 
      * Devuelve la altura del mapa en las coordenadas especificadas
      * @param x Coordenada del mapa
      * @param y Coordenada del mapa
@@ -132,5 +131,4 @@ public class DBAMap {
             return Color.BLACK;
         }
     }
-    
 }

@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Practica 3
+ * Grupo L
  */
 package practica3;
 
@@ -12,7 +11,6 @@ import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,13 +23,13 @@ public abstract class AbstractDrone extends SuperAgent {
 
     //Rol del agente
     private String rolname;
-    // Visibilidad
+    //Visibilidad
     private int visibilidad;
-    // Rango
+    //Rango
     private int rango;
-    // Altura máximo
+    //Altura maxima
     int alturaMax;
-    // Mapa
+    //Mapa
     private String nombreMapa;
     private DBAMap map;
     
@@ -43,14 +41,14 @@ public abstract class AbstractDrone extends SuperAgent {
     private String convID;
     //Reply
     private String reply;
-    // Session
+    //Session
     private String session;
     
     //Variables para mensajes
     private ACLMessage outbox;
     private ACLMessage inbox;
     
-    // Sensores
+    //Sensores para la percepcion
     private int posx, posy, posz;
     private double fuel;
     private double gonioDistancia;
@@ -62,23 +60,23 @@ public abstract class AbstractDrone extends SuperAgent {
     private int torescue;
     private int energy;
     
-    
-    // Alemanes
+    //Numero de alemanes para tratar
     private int alemanesTotales;
     private int alemanesEncontrados;
     private int alemanesRescatados;
     
-    // Coordenadas objetivo para el desplazamiento
+    //Coordenadas objetivo para el desplazamiento
     private int objetivox, objetivoy;
     
     /**
      * Constructor de la clase principal. Crea un nuevo Agente
      * @param aid ID del agente
+     * @param mapa mapa en cuestion
      * @throws Exception
      * 
-     * @author Alicia Rodriguez 
+     * @author Alicia Rodriguez, Juan Francisco Diaz, Ana Rodriguez
      */
-    public AbstractDrone(AgentID aid, String mapa ) throws Exception {
+    public AbstractDrone(AgentID aid, String mapa) throws Exception {
         super(aid);
         rolname = this.getAid().name;
         nombreMapa = mapa;
@@ -89,17 +87,13 @@ public abstract class AbstractDrone extends SuperAgent {
     }
     
     /**
-      *
-      * Funcion que inicializa el numero de alemanes en funcion del mapa
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Funcion que inicializa el numero de alemanes en funcion del mapa
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     private void inicializarNumeroAlemanes() {
-        
         alemanesEncontrados = alemanesRescatados = 0;
-        
-        switch( nombreMapa ) {
+        switch(nombreMapa) {
             case "playground":
                 alemanesTotales = 4;
                 break;
@@ -118,21 +112,17 @@ public abstract class AbstractDrone extends SuperAgent {
             case "map5":
                 alemanesTotales = 10;
                 break;
-                
         }
     }
     
     /**
-      *
-      * Funcion que inicializa las caracteristicas del drone en funcion de su
-      * rol (visibilidad, rango y altura maximo)
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Funcion que inicializa las caracteristicas del drone en funcion de su
+     * rol (visibilidad, rango y altura maxima)
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     private void inicializarCaracteristicas() {
-        
-        switch( rolname ) {
+        switch(rolname) {
             case "FLY":
                 alturaMax = 255;
                 visibilidad = 20;
@@ -154,18 +144,14 @@ public abstract class AbstractDrone extends SuperAgent {
                 rango = 1;
                 break;
         }
-        
     }
     
     /**
-      *
-      * Funcion que carga el mapa
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Funcion que carga el mapa
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     private void inicializarMapa() {
-        
         map = new DBAMap();
         
         try {
@@ -174,7 +160,6 @@ public abstract class AbstractDrone extends SuperAgent {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println( "\n\nERROR: no se pudo cargar el mapa.\n" );
         }
-        
     }
     
     @Override
@@ -185,7 +170,7 @@ public abstract class AbstractDrone extends SuperAgent {
     /**
      *  Funcion principal del drone
      * 
-     *  @author Juan Francisco Diaz Moreno
+     *  @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
      */
     public void execute() {
         
@@ -209,46 +194,41 @@ public abstract class AbstractDrone extends SuperAgent {
             
             this.enviarOK();
         }
-        
         checkin();
         actuacion();
     }
     
     /**
-      *
-      * Funcion para realizar el checkin, es decir, situar los drones en el mapa
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Funcion para realizar el checkin, es decir, situar los drones en el mapa
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     private void checkin() {
-        
-        System.out.println( rolname + " inicializando CHECKIN..." );
+        System.out.println(rolname + " inicializando CHECKIN...");
         
         outbox = new ACLMessage();
-        outbox.setPerformative( ACLMessage.REQUEST );
-        outbox.setConversationId( convID );
-        outbox.setSender( this.getAid() );
-        outbox.setReceiver( server );
+        outbox.setPerformative(ACLMessage.REQUEST);
+        outbox.setConversationId(convID);
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(server);
         
         JsonObject objeto = new JsonObject();
-        objeto.add( "command", "checkin" );
-        objeto.add( "session", session );
-        objeto.add( "rol", rolname );
-        objeto.add( "x", posx );
-        objeto.add( "y", posy );
+        objeto.add("command", "checkin");
+        objeto.add("session", session);
+        objeto.add("rol", rolname);
+        objeto.add("x", posx);
+        objeto.add("y", posy);
         
         String content = objeto.toString();
-        outbox.setContent( content );
+        outbox.setContent(content);
         
-        this.send( outbox );
+        this.send(outbox);
         
-        System.out.println( rolname + " enviando " + content );
-        
+        System.out.println(rolname + " enviando " + content);
     }
     
     /**
-     * Funcion que
+     * Funcion para enviar el ok al interlocutor
      * 
      * @author Alicia Rodriguez
      */
@@ -267,19 +247,19 @@ public abstract class AbstractDrone extends SuperAgent {
     }
     
     /**
-     *  Bucle con la actuacion de los drones
+     * Bucle con la actuacion de los drones
      * 
-     *  @author Juan Francisco Diaz Morneo 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran 
      */
     public abstract void actuacion();
     
     /**
-     *  Funcion que actualiza la percepcion del drone
+     * Funcion que actualiza la percepcion del drone
      * 
-     *  @author Juan Francisco Diaz Moreno 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
      */
     public void actualizarPercepcion() {
-    
+        
         //Envio de la solicitud
         outbox = new ACLMessage();
         outbox.setPerformative(ACLMessage.QUERY_REF);
@@ -290,7 +270,7 @@ public abstract class AbstractDrone extends SuperAgent {
         
         this.send(outbox);
         
-        //Recepción del mensaje
+        //Recepcion del mensaje
         do {
             try {
                 inbox = this.receiveACLMessage();
@@ -311,62 +291,64 @@ public abstract class AbstractDrone extends SuperAgent {
         fuel = percepcion.get("fuel").asDouble();
         
         // GONIO
-        JsonObject gonio = percepcion.get( "gonio" ).asObject();
-        gonioDistancia = gonio.get( "distance" ).asDouble();
-        gonioAngulo = gonio.get( "angle" ).asDouble();
+        JsonObject gonio = percepcion.get("gonio").asObject();
+        gonioDistancia = gonio.get("distance").asDouble();
+        gonioAngulo = gonio.get("angle").asDouble();
         
         // INFRARED
-        infrared = percepcion.get( "infrared" ).asArray();
+        infrared = percepcion.get("infrared").asArray();
         
         // AWACS
-        awacs = percepcion.get( "awacs" ).asArray();
+        awacs = percepcion.get("awacs").asArray();
         
         // STATUS
-        status = percepcion.get( "status" ).asString();
+        status = percepcion.get("status").asString();
         
         // GOAL
-        goal = percepcion.get( "goal" ).asBoolean();
+        goal = percepcion.get("goal").asBoolean();
         
         // TORESCUE
-        torescue = percepcion.get( "torescue" ).asInt();
+        torescue = percepcion.get("torescue").asInt();
         
         // ENERGY
-        energy = percepcion.get( "energy" ).asInt();
-
+        energy = percepcion.get("energy").asInt();
     }
     
     /**
-     *  Funcion que calcula la posicion inicial de los drones
+     * Funcion que calcula la posicion inicial de los drones
      * 
-     *  @author Ana Rodriguez Duran, Alberto Rodriguez, Juan Francisco Diaz Moreno
+     * @author Ana Rodriguez Duran, Alberto Rodriguez, Juan Francisco Diaz Moreno
      */
-    public void inicializarPosicion(){        
-        //segun rolname sacamos el drone en una pos u otra
+    public void inicializarPosicion(){    
         
-        switch( rolname ) {
+        //Segun rolname sacamos el drone en una pos u otra
+        switch(rolname) {
+            //En la esquina superior izquierda
             case "FLY":
                 posx = visibilidad;
                 posy = map.getHeight() - visibilidad;
                 break;
+            //En la esquina inferior derecha
             case "SPARROW":
                 posx = map.getWidth() - visibilidad;
                 posy = visibilidad;
                 break;
+            //En el centro
             case "HAWK":
                 posx = map.getWidth() / 2;
                 posy = map.getHeight() / 2;
                 break;
+            //Casi al lado del hawk (para que no se choquen)
             case "RESCUE":
                 posx = map.getWidth() / 2;
                 posy = ( map.getHeight() / 2 ) + 1;
         }
-        
     }
     
     /**
-     *  Funcion para repostar
+     * Funcion para repostar
      * 
-     *  @author Alberto Rodriguez
+     * @author Alberto Rodriguez
      */
     public void refuel(){
         JsonObject objetoJson = new JsonObject();
@@ -392,27 +374,35 @@ public abstract class AbstractDrone extends SuperAgent {
         
         //Si recibo inform, repostar
         if(inbox.getPerformativeInt() == ACLMessage.INFORM){
-            
-            
             //Fuel global, restarle lo que hemos añadido al agente
             //FuelTotal -= this.fuel;
             
             //Actualizo el fuel del drone.
             this.fuel = 100;
-            System.out.println("HOLA HE REPOSTADO!!!!!");
-            
+            System.out.println("HOLA HE REPOSTADO:)!!!!!");
         }
         else{
             JsonObject objeto = Json.parse(this.inbox.getContent()).asObject();
             System.out.println(objeto.get("result").asString());
         }
-        
     }
     
+    /**
+     * Calcula a traves de la distancia del gonio si hay un aleman
+     * @return true si visualiza el aleman, false en caso contrario
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public boolean alemanVisualizado() {
-        return ( gonioDistancia != -1 );
+        return (gonioDistancia != -1);
     }
     
+    /**
+     * Calcula las coordenadas de un punto con la distancia y el angulo del gonio
+     * @return coordenadas del punto
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public JsonObject calcularPosicion() {
         JsonObject coordenadas = new JsonObject();
         
@@ -420,137 +410,135 @@ public abstract class AbstractDrone extends SuperAgent {
         double dify = Math.sin( Math.toRadians( gonioAngulo ) ) * gonioDistancia;
         
         //if( gonioAngulo >= 0 && <=)
-        
         return coordenadas;
     }
     
+    /**
+     * Funcion abstracta para calcular el siguiente movimiento segun un objetivo
+     * @return siguiente movimiento
+     * 
+     * @author Juan Francisco Diaz Morneo 
+     */
     public abstract String calcularSiguienteMovimiento();
     
+    /**
+     * Funcion para realizar el movimiento
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public void mover() {
-        
         String movimiento = calcularSiguienteMovimiento();
         
         JsonObject command = new JsonObject();
-        command.add( "command", movimiento );
+        command.add("command", movimiento);
         
         outbox = new ACLMessage();
-        outbox.setSender( this.getAid() );
-        outbox.setReceiver( server );
-        outbox.setPerformative( ACLMessage.REQUEST );
-        outbox.setContent( command.toString() );
-        outbox.setConversationId( convID );
-        outbox.setInReplyTo( reply );
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(server);
+        outbox.setPerformative(ACLMessage.REQUEST);
+        outbox.setContent(command.toString());
+        outbox.setConversationId(convID);
+        outbox.setInReplyTo(reply);
         
-        this.send( outbox );
-        
+        this.send(outbox);
     }
     
     /**
-      *
-      * Getter de rolname
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Getter de rolname
+     * @return rolname rolname
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public String getRolname() {
         return rolname;
     }
     
     /**
-      *
-      * Getter de posx
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Getter de posx
+     * @return posx posx
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public int getPosx() {
         return posx;
     }
     
     /**
-      *
-      * Getter de posy
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Getter de posy
+     * @return posy posy
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public int getPosy() {
         return posy;
     }
     
     /**
-      *
-      * Getter de visibilidad
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Getter de visibilidad
+     * @return visibilidad visibilidad
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public int getVisibilidad() {
         return visibilidad;
     }
     
     /**
-      *
-      * Getter de alemanesTotales
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Getter de alemanesTotales
+     * @return alemanesTotales alemanesTotales
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public int getAlemanesTotales() {
         return alemanesTotales;
     }
     
     /**
-      *
-      * Getter de alemanesEncontrados
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Getter de alemanesEncontrados
+     * @return alemanesEncontrados alemanesEncontrados
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public int getAlemanesEncontrados() {
         return alemanesEncontrados;
     }
     
     /**
-      *
-      * Getter de alemanesRescatados
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Getter de alemanesRescatados
+     * @return alemanesRescatados alemanesRescatados
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public int getAlemanesRescatados() {
         return alemanesRescatados;
     }
     
     /**
-      *
-      * Getter de map
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Getter de map
+     * @return map mapa
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public DBAMap getMap() {
         return map;
     }
     
     /**
-      *
-      * Setter de objetivox
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
-    public void setObjetivox( int coordenada ) {
+     * Setter de objetivox
+     * 
+     * @param coordenada coordenada x
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
+    public void setObjetivox(int coordenada) {
         objetivox = coordenada;
     }
     
     /**
-      *
-      * Setter de objetivoy
-      * 
-      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
-      * 
-      */
+     * Setter de objetivoy
+     * 
+     * @param coordenada coordenada y
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
     public void setObjetivoy( int coordenada ) {
         objetivoy = coordenada;
     }

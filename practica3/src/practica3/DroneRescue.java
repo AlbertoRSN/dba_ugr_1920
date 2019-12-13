@@ -1,60 +1,63 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Practica 3
+ * Grupo L
  */
 package practica3;
 
 import es.upv.dsic.gti_ia.core.AgentID;
 
 /**
- * Clase principal para el dron de rescate
+ * Clase principal para los drones de rescate
+ * Hereda de la clase abstracta AbstractDrone
  * 
- * @author Juan Francisco Díaz
+ * @author Juan Francisco Diaz, Ana Rodriguez Duran
  */
 public class DroneRescue extends AbstractDrone {
     
-    // Estado del drone
+    //Estado del drone
     private EstadoRescue estado;
     
-    // Variables que controlan el número de alemanes del mapa
+    //Variables que controlan el numero de alemanes del mapa
     private int alemanesIniciales;
     private int alemanesRescatados;
     
-    public DroneRescue( AgentID aid, String mapa ) throws Exception {
-        super( aid, mapa );
-        
+    /**
+     * Constructor de la clase DroneRescue
+     * @param aid tipo de drone buscador
+     * @param mapa nombre del mapa en el que buscar
+     * @throws Exception excepcion a lanzar
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
+    public DroneRescue(AgentID aid, String mapa) throws Exception {
+        super(aid, mapa);
         estado = EstadoRescue.OCIOSO;
         alemanesRescatados = 0;
     }
     
     /**
-       *
-       *  Funcion que establece el numero de alemanes que hay en el mapa inicialmente.
-       * 
-       * @Author Juan Francisco Diaz Moreno
-       * 
-       */
-    public void setAlemanesIniciales( int alemanesIniciales ) {
+     * Setter del numero de alemanes iniciales
+     * 
+     * @param alemanesIniciales alemanesIniciales
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
+    public void setAlemanesIniciales(int alemanesIniciales) {
         this.alemanesIniciales = alemanesIniciales;
     }
     
     /**
-       *
-       * Funcion que comprueba si todos los alemanes se han rescatado ya
-       * 
-       * @Author Juan Francisco Diaz Moreno
-       * 
-       */
+     * Funcion que comprueba si todos los alemanes han sido rescatados
+     * @return true en caso de que todos se hayan rescatado, false en caso contrario
+     * 
+     * @author Juan Francisco Diaz Moreno
+     */
     public boolean todosRescatados() {
-      
         boolean rescatados = false;
         
-        if( alemanesIniciales == alemanesRescatados )
+        if(alemanesIniciales == alemanesRescatados)
             rescatados = true;
         
         return rescatados;
-        
     }
     
     /**
@@ -62,9 +65,10 @@ public class DroneRescue extends AbstractDrone {
      * 
      * @author Juan Francisco Diaz Moreno
      */
+    @Override
     public void actuacion() {
         
-        while( !todosRescatados() ) {
+        while(!todosRescatados()) {
             
             
             
@@ -85,5 +89,17 @@ public class DroneRescue extends AbstractDrone {
         //          RECOGE ALEMÁN
         //      NO LO ESTÁ
         //          BAJA   
+    }
+    
+    /**
+     * Funcion para calcular el siguiente movimiento segun un objetivo
+     * @return movimiento siguiente movimiento
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
+    @Override
+    public String calcularSiguienteMovimiento() {
+        String movimiento = null;
+        return movimiento;
     }
 }

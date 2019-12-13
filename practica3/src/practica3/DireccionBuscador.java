@@ -1,13 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Practica 3
+ * Grupo L
  */
 package practica3;
 
 /**
- *
- * @author juanfrandm98
+ * Enumeracion con las direcciones a las que puede ir el buscador
+ * 
+ * @author Juan Francisco Diaz
  */
 public enum DireccionBuscador {
     NORTE,
