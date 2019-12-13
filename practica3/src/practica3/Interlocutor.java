@@ -31,6 +31,7 @@ public class Interlocutor extends SuperAgent {
     //Clave de sesion
     String key;
     String reply;
+    String session;
     //Variables para mensajes
     ACLMessage outbox = null;
     ACLMessage inbox = null;
@@ -116,6 +117,10 @@ public class Interlocutor extends SuperAgent {
             key = inbox.getConversationId();
             System.out.println("Recibida key: " + key);
             
+            JsonObject recibido = new JsonObject();
+            recibido = ( Json.parse(inbox.getContent()).asObject() );
+            session = recibido.get( "session" ).asString();
+            
             //Enviamos la clave a los 4 drones
             this.enviarKey();
             
@@ -162,12 +167,13 @@ public class Interlocutor extends SuperAgent {
     /**
      *  Envio de la clave a los drones
      * 
-     *  @author Alicia Rodriguez, Juan Francisco Diaz Moreno, Alberto Rodriguez
+     *  @author Alicia Rodriguez, Juan Francisco Diaz Moreno, Alberto Rodriguez, Ana Rodriguez Duran
      */
     public void enviarKey() {
         
         JsonObject objetoJSON = new JsonObject();
         objetoJSON.add("key", key);
+        objetoJSON.add( "session", session );
         String mensaje = objetoJSON.toString();
         
         outbox = new ACLMessage();
