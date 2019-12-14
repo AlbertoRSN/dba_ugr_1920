@@ -414,7 +414,7 @@ public abstract class AbstractDrone extends SuperAgent {
       * @Author Juan Francisco Diaz Moreno
       * 
       */
-    private void enviarMove( String move ) {
+    public void enviarMove( String move ) {
         
         outbox = new ACLMessage();
         outbox.setPerformative( ACLMessage.REQUEST );
@@ -451,7 +451,7 @@ public abstract class AbstractDrone extends SuperAgent {
       * @Author Juan Francisco Diaz Moreno
       * 
       */
-    private void subirMaxima() {
+    public void subirMaxima() {
         
         while( posz < alturaMax )
             enviarMove( "moveUP" );
@@ -465,7 +465,7 @@ public abstract class AbstractDrone extends SuperAgent {
       * @Author Juan Francisco Diaz Moreno
       * 
       */
-    private void bajarSuelo() {
+    public void bajarSuelo() {
         
         
         while( posz > map.getLevel( posx, posy ) )
@@ -506,6 +506,21 @@ public abstract class AbstractDrone extends SuperAgent {
      * @author Juan Francisco Diaz Morneo 
      */
     public abstract String calcularSiguienteMovimiento();
+    
+    /**
+      *
+      * Funcion que comprueba si el drone ha llegado a las coordenadas x e y de
+      * su objetivo
+      * 
+      * @return true si ha llegado, false en otro caso
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public boolean estoyEnObjetivo() {
+        
+        return ( ( posx == objetivox ) && ( posy == objetivoy ) );
+        
+    }
     
     /**
      * Funcion para realizar el movimiento
@@ -627,6 +642,18 @@ public abstract class AbstractDrone extends SuperAgent {
      */
     public void setObjetivoy( int coordenada ) {
         objetivoy = coordenada;
+    }
+    
+    /**
+      *
+      * Getter del radio del rango
+      * 
+      * @return Radio del rango del drone
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public int getRadioRango() {
+        return ( rango - 1 ) / 2;
     }
     
     @Override
