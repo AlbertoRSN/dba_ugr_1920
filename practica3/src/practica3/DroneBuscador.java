@@ -16,7 +16,10 @@ import es.upv.dsic.gti_ia.core.AgentID;
 public class DroneBuscador extends AbstractDrone {
     
     // Direccion hacia la que se dirige el drone
-    private DireccionBuscador direccion;
+    private DireccionBuscador direccion, direccionAntigua;
+    
+    // Es true si ha terminado su recorrido y puede dejar de moverse
+    private boolean recorridoTerminado;
     
     /**
      * Constructor de la clase DroneBuscador
@@ -28,6 +31,7 @@ public class DroneBuscador extends AbstractDrone {
      */
     public DroneBuscador(AgentID aid, String mapa) throws Exception {
         super(aid, mapa);
+        recorridoTerminado = false;
     }
     
     /**
@@ -38,15 +42,17 @@ public class DroneBuscador extends AbstractDrone {
     @Override
     public void actuacion() {
         seleccionPrimerObjetivo();
+        actualizarPercepcion();
+        subirMaxima();
         
         //Mientras los alemanes encontrados no superen al numero total a rescatar
-        while(getAlemanesEncontrados() < getAlemanesTotales()) {
-            actualizarPercepcion();
+        while( ( getAlemanesEncontrados() < getAlemanesTotales() ) || recorridoTerminado ) {
             
-            if( alemanVisualizado() ) {
-                notificarPosicion();
-            }
-            mover();
+            if( estoyEnObjetivo() )
+                siguienteObjetivo();
+            
+            enviarMove( calcularSiguienteMovimiento() );
+            
         }
     }
     
@@ -82,6 +88,94 @@ public class DroneBuscador extends AbstractDrone {
                 direccion = DireccionBuscador.NORTE;
                 break;
         }
+        
+        direccionAntigua = direccion;
+    }
+    
+    /**
+      *
+      * Funcion que calcula las coordenadas del siguiente objetivo
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void calcularSiguienteObjetivo() {
+        
+        switch( direccion ) {
+            case NORTE:
+                setObjetivoy( getMap().getHeight() - getRadioRango() );
+                break;
+            case SUR:
+                setObjetivoy( getRadioRango() );
+                break;
+            case ESTE:
+                setObjetivox( getPosx() + getRadioRango() );
+                break;
+            case OESTE:
+                setObjetivox( getPosx() - getRadioRango() );
+                break;
+        }
+        
+    }
+    
+    /**
+      *
+      * Funcion que decide el siguiente movimiento a realizar por cada drone
+      * segun el objetivo impuesto
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void siguienteObjetivo() {
+        
+        switch( super.getRolname() ) {
+            case "FLY":
+                switch( direccion ) {
+                    case ESTE:
+                        if( direccionAntigua == DireccionBuscador.NORTE ) {
+                            direccionAntigua = direccion;
+                            direccion = DireccionBuscador.SUR;
+                        } else {
+                            direccionAntigua = direccion;
+                            direccion = DireccionBuscador.NORTE;
+                        }
+                        break;
+                    default:
+                        direccionAntigua = direccion;
+                        direccion = DireccionBuscador.ESTE;
+                        break;
+                }
+                break;
+            case "SPARROW":
+                switch( direccion ) {
+                    case OESTE:
+                        if( direccionAntigua == DireccionBuscador.NORTE ) {
+                            direccionAntigua = direccion;
+                            direccion = DireccionBuscador.SUR;
+                        } else {
+                            direccionAntigua = direccion;
+                            direccion = DireccionBuscador.NORTE;
+                        }
+                        break;
+                    default:
+                        direccionAntigua = direccion;
+                        direccion = DireccionBuscador.OESTE;
+                        break;
+                }
+                break;
+            case "HAWK":
+                switch( direccion ) {
+                    case NORTE:
+                        direccion = DireccionBuscador.SUR;
+                        break;
+                    case SUR:
+                        recorridoTerminado = true;
+                        break;
+                }
+        }
+        
+        calcularSiguienteObjetivo();
+        
     }
     
     /**
