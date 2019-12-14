@@ -319,19 +319,21 @@ public abstract class AbstractDrone extends SuperAgent {
      * 
      * @author Ana Rodriguez Duran, Alberto Rodriguez, Juan Francisco Diaz Moreno
      */
-    public void inicializarPosicion(){    
+    public void inicializarPosicion(){  
+        
+        int guia = ( rango - 1 ) / 2;
         
         //Segun rolname sacamos el drone en una pos u otra
         switch(rolname) {
             //En la esquina superior izquierda
             case "FLY":
-                posx = visibilidad;
-                posy = map.getHeight() - visibilidad;
+                posx = guia;
+                posy = map.getHeight() - guia;
                 break;
             //En la esquina inferior derecha
             case "SPARROW":
-                posx = map.getWidth() - visibilidad;
-                posy = visibilidad;
+                posx = map.getWidth() - guia;
+                posy = guia;
                 break;
             //En el centro
             case "HAWK":
@@ -346,11 +348,11 @@ public abstract class AbstractDrone extends SuperAgent {
     }
     
     /**
-     * Funcion para repostar
+     * Funcion que envia el mensaje para repostar
      * 
      * @author Alberto Rodriguez
      */
-    public void refuel(){
+    public void enviarRefuel(){
         JsonObject objetoJson = new JsonObject();
         objetoJson.add("command", "refuel");
         
@@ -385,6 +387,90 @@ public abstract class AbstractDrone extends SuperAgent {
             JsonObject objeto = Json.parse(this.inbox.getContent()).asObject();
             System.out.println(objeto.get("result").asString());
         }
+    }
+    
+    /**
+      * 
+      * Funcion para repostar (baja hasta el nivel del suelo y hace el refuel)
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void repostar() {
+        
+        while( posz > map.getLevel( posx, posy ) ) {
+            enviarMove( "moveDW" );
+        }
+        
+        enviarRefuel();
+        
+    }
+    
+    /**
+      * 
+      * Funcion que envia el mensaje para moverse
+      * 
+      * @param move Direccion a la que se movera
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void enviarMove( String move ) {
+        
+        outbox = new ACLMessage();
+        outbox.setPerformative( ACLMessage.REQUEST );
+        outbox.setSender( this.getAid() );
+        outbox.setReceiver( server );
+        outbox.setConversationId( convID );
+        outbox.setInReplyTo( reply );
+        
+        JsonObject command = new JsonObject();
+        command.add( "command", move );
+        outbox.setContent( command.toString() );
+        
+        this.send( outbox );
+        
+        try {
+            inbox = this.receiveACLMessage();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            System.out.println( "Drone " + rolname + " se ha movido: " + move );
+            actualizarPercepcion();
+        } else {
+            System.out.println( "Drone " + rolname + " ERROR ENVIARMOVE: " + inbox.getPerformative() );
+        }
+        
+    }
+    
+    /**
+      *
+      * Funcion para subir hasta la altura maxima del drone
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void subirMaxima() {
+        
+        while( posz < alturaMax )
+            enviarMove( "moveUP" );
+        
+    }
+    
+    /**
+      *
+      * Funcion para bajar hasta el nivel del suelo
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void bajarSuelo() {
+        
+        
+        while( posz > map.getLevel( posx, posy ) )
+            enviarMove( "moveDW" );
+        
     }
     
     /**
