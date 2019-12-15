@@ -26,7 +26,7 @@ public class Interlocutor extends SuperAgent {
     //Clave de sesion
     String key;
     String reply;
-    String session;
+    String session = "";
     //Variables para mensajes
     ACLMessage outbox = null;
     ACLMessage inbox = null;
@@ -92,7 +92,7 @@ public class Interlocutor extends SuperAgent {
             
 //            JsonObject recibido = new JsonObject();
 //            recibido = ( Json.parse(inbox.getContent()).asObject() );
-            session = objeto.get( "session" ).asString();
+            session = objeto.get("session").asString();
             System.out.println("Recibida clave de session --> " + session);
             System.out.println("Recibidas DIMENSIONES DEL MAPA del servidor ---> X: " + objeto.get( "dimx" ).asInt() + ", Y: " + objeto.get( "dimy" ).asInt());
             
@@ -148,7 +148,7 @@ public class Interlocutor extends SuperAgent {
     public void enviarKey() {
         JsonObject objetoJSON = new JsonObject();
         objetoJSON.add("key", key);
-        objetoJSON.add( "session", session );
+        objetoJSON.add("session", session );
         //System.out.println("Soy interlocutor y envio esta clave de sesion ---> " + session);
         String mensaje = objetoJSON.toString();
         
