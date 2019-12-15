@@ -84,33 +84,18 @@ public class Interlocutor extends SuperAgent {
             
             JsonObject objeto = Json.parse(this.inbox.getContent()).asObject();
             
-            //HAY QUE GUARDAR LA TRAZA DEL MAP EN FICHERO JSON
-//            
-//            JsonArray img = objeto.get("map").asArray();
-//                //JsonArray img = objeto.get("map").asArray();
-//            try {                
-//                /// 2) Construir una matriz bidimensional para el mapa
-//                map.fromJson(img);
-//            } catch (IOException ex) {
-//                Logger.getLogger(Interlocutor.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//            
-//            System.out.println("Saving file ./json/"+mapa+"Matriz.json");
-//            try {
-//                map.save("./json/"+mapa+"Matriz.json");
-//            } catch (IOException ex) {
-//                Logger.getLogger(Interlocutor.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-            
             //Tratamos el mapa
             tratarMapa(objeto);
             
             key = inbox.getConversationId();
             System.out.println("Recibida key: " + key);
             
-            JsonObject recibido = new JsonObject();
-            recibido = ( Json.parse(inbox.getContent()).asObject() );
-            session = recibido.get( "session" ).asString();
+//            JsonObject recibido = new JsonObject();
+//            recibido = ( Json.parse(inbox.getContent()).asObject() );
+            session = objeto.get( "session" ).asString();
+            System.out.println("Recibida clave de session --> " + session);
+            System.out.println("Recibidas DIMENSIONES DEL MAPA del servidor ---> X: " + objeto.get( "dimx" ).asInt() + ", Y: " + objeto.get( "dimy" ).asInt());
+            
             
             //Enviamos la clave a los 4 drones
             this.enviarKey();
@@ -164,6 +149,7 @@ public class Interlocutor extends SuperAgent {
         JsonObject objetoJSON = new JsonObject();
         objetoJSON.add("key", key);
         objetoJSON.add( "session", session );
+        //System.out.println("Soy interlocutor y envio esta clave de sesion ---> " + session);
         String mensaje = objetoJSON.toString();
         
         outbox = new ACLMessage();

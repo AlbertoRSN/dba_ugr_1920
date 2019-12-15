@@ -23,26 +23,38 @@ public abstract class AbstractDrone extends SuperAgent {
 
     //Rol del agente
     private String rolname;
+    
     //Visibilidad
     private int visibilidad;
+    
     //Rango
     private int rango;
+    
     //Altura maxima
     int alturaMax;
+    
     //Mapa
     private String nombreMapa;
     private DBAMap map;
     
     //ID del servidor
     private AgentID server = new AgentID("Lesath");
+    
     //Clave de sesión
     private String key;
+    
     //Conversation ID
     private String convID;
+    
     //Reply
     private String reply;
+    
     //Session
     private String session;
+    
+    //Variables para controlar repostaje
+    static final int MINFUEL = 10;
+    private double gastoFuel; //Diferente segun que tipo de drone es
     
     //Variables para mensajes
     private ACLMessage outbox;
@@ -117,9 +129,9 @@ public abstract class AbstractDrone extends SuperAgent {
     
     /**
      * Funcion que inicializa las caracteristicas del drone en funcion de su
-     * rol (visibilidad, rango y altura maxima)
+     * rol (visibilidad, rango, altura maxima, gasto de fuel)
      * 
-     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran, Alberto Rodriguez
      */
     private void inicializarCaracteristicas() {
         switch(rolname) {
@@ -127,21 +139,25 @@ public abstract class AbstractDrone extends SuperAgent {
                 alturaMax = 255;
                 visibilidad = 20;
                 rango = 5;
+                gastoFuel = 0.1;
                 break;
             case "SPARROW":
                 alturaMax = 240;
                 visibilidad = 50;
                 rango = 11;
+                gastoFuel = 0.5;
                 break;
             case "HAWK":
                 alturaMax = 230;
                 visibilidad = 100;
                 rango = 41;
+                gastoFuel = 2;
                 break;
             case "RESCUE":
                 alturaMax = 255;
                 visibilidad = 1;
                 rango = 1;
+                gastoFuel = 0.5;
                 break;
         }
     }
@@ -187,6 +203,7 @@ public abstract class AbstractDrone extends SuperAgent {
             JsonObject objeto = Json.parse(this.inbox.getContent()).asObject();
             key = objeto.get("key").asString();
             session = objeto.get( "session" ).asString();
+            //System.out.println("Session ---------------> " + session);
             System.out.println("key -> " + key);
             
             convID = "CONV-" + key;
@@ -196,6 +213,11 @@ public abstract class AbstractDrone extends SuperAgent {
         }
         checkin();
         actuacion();
+        
+        //Si es necesario respostar, reposta.
+        //if(necesitoRepostar())
+            repostar();
+            
     }
     
     /**
@@ -214,6 +236,7 @@ public abstract class AbstractDrone extends SuperAgent {
         
         JsonObject objeto = new JsonObject();
         objeto.add("command", "checkin");
+        objeto.add("key", key);
         objeto.add("session", session);
         objeto.add("rol", rolname);
         objeto.add("x", posx);
@@ -378,6 +401,7 @@ public abstract class AbstractDrone extends SuperAgent {
         if(inbox.getPerformativeInt() == ACLMessage.INFORM){
             //Fuel global, restarle lo que hemos añadido al agente
             //FuelTotal -= this.fuel;
+            energy -= fuel;
             
             //Actualizo el fuel del drone.
             this.fuel = 100;
@@ -393,16 +417,23 @@ public abstract class AbstractDrone extends SuperAgent {
       * 
       * Funcion para repostar (baja hasta el nivel del suelo y hace el refuel)
       * 
-      * @Author Juan Francisco Diaz Moreno
+      * @Author Juan Francisco Diaz Moreno, Alberto Rodriguez
       * 
       */
     private void repostar() {
         
-        while( posz > map.getLevel( posx, posy ) ) {
-            enviarMove( "moveDW" );
+        //Si la energia global que queda es suficiente para repostar, entonces me muevo, si no no gasto energia en repostar.
+        if(energy >= 100-fuel){
+            while( posz > map.getLevel( posx, posy ) ) {
+                enviarMove( "moveDW" );
+            }
+            
+            enviarRefuel();
+        }
+        else{
+            System.out.println("No queda suficiente energia para repostar...");
         }
         
-        enviarRefuel();
         
     }
     
@@ -437,6 +468,7 @@ public abstract class AbstractDrone extends SuperAgent {
         
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
             System.out.println( "Drone " + rolname + " se ha movido: " + move );
+            fuel -= gastoFuel;
             actualizarPercepcion();
         } else {
             System.out.println( "Drone " + rolname + " ERROR ENVIARMOVE: " + inbox.getPerformative() );
@@ -543,6 +575,21 @@ public abstract class AbstractDrone extends SuperAgent {
         
         this.send(outbox);
     }
+    
+     /**
+     * Getter del fuel restante de cada drone
+     * @return necesito si necesita o no
+     * 
+     * @author Alberto Rodriguez 
+     */
+    public boolean necesitoRepostar(){
+        boolean necesito = false;
+        if(fuel < 10)
+            necesito = true;
+        
+        return necesito;
+    }
+    
     
     /**
      * Getter de rolname

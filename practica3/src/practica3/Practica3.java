@@ -10,7 +10,7 @@ import es.upv.dsic.gti_ia.core.AgentsConnection;
 /**
  * Clase principal de la practica 3
  * 
- * @author Juan Francisco Diaz Moreno
+ * @author Alberto Rodriguez, Juan Francisco Diaz Moreno
  */
 public class Practica3 {
 
