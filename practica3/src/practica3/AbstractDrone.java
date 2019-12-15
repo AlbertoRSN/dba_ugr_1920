@@ -50,7 +50,7 @@ public abstract class AbstractDrone extends SuperAgent {
     private String reply;
     
     //Session
-    private String session;
+    private String session = "";
     
     //Variables para controlar repostaje
     static final int MINFUEL = 10;
@@ -69,6 +69,8 @@ public abstract class AbstractDrone extends SuperAgent {
     private JsonArray awacs;
     private String status;
     private boolean goal;
+
+
     private int torescue;
     private int energy;
     
@@ -202,21 +204,24 @@ public abstract class AbstractDrone extends SuperAgent {
             System.out.println("\nRegistro realizado con éxito para: " + this.rolname);
             JsonObject objeto = Json.parse(this.inbox.getContent()).asObject();
             key = objeto.get("key").asString();
-            session = objeto.get( "session" ).asString();
+            session = objeto.get("session").asString();
             //System.out.println("Session ---------------> " + session);
             System.out.println("key -> " + key);
             
-            convID = "CONV-" + key;
-            reply = "REPLY-" + key;
+            //convID = "CONV-" + key;
+            //reply = "REPLY-" + key;
+            
+            convID = key ;
+            reply = key;
             
             this.enviarOK();
         }
         checkin();
-        actuacion();
-        
+        actuacion(); //Cada drone tiene su metodo Actuacion sobreescrito!
+
         //Si es necesario respostar, reposta.
         //if(necesitoRepostar())
-            repostar();
+        //repostar();
             
     }
     
@@ -236,11 +241,11 @@ public abstract class AbstractDrone extends SuperAgent {
         
         JsonObject objeto = new JsonObject();
         objeto.add("command", "checkin");
-        objeto.add("key", key);
         objeto.add("session", session);
         objeto.add("rol", rolname);
         objeto.add("x", posx);
         objeto.add("y", posy);
+        //objeto.add("key", key);
         
         String content = objeto.toString();
         outbox.setContent(content);
@@ -405,7 +410,7 @@ public abstract class AbstractDrone extends SuperAgent {
             
             //Actualizo el fuel del drone.
             this.fuel = 100;
-            System.out.println("HOLA HE REPOSTADO:)!!!!!");
+            System.out.println("HE REPOSTADO:)!!!!!");
         }
         else{
             JsonObject objeto = Json.parse(this.inbox.getContent()).asObject();
@@ -701,6 +706,18 @@ public abstract class AbstractDrone extends SuperAgent {
       */
     public int getRadioRango() {
         return ( rango - 1 ) / 2;
+    }
+    
+    /**
+      *
+      * Getter de si esta en un objetivo o no
+      * 
+      * @return está encima de objetivo o no
+      * @Author Alberto Rodriguez
+      * 
+      */
+    public boolean getGoal() {
+        return goal;
     }
     
     @Override

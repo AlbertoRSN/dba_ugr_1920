@@ -52,8 +52,7 @@ public class DroneBuscador extends AbstractDrone {
                 siguienteObjetivo();
             
             enviarMove( calcularSiguienteMovimiento() );
-            
-            
+      
         }
     }
     

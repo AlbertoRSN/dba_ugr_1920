@@ -63,32 +63,34 @@ public class DroneRescue extends AbstractDrone {
     /**
      * Actuacion del drone Rescue
      * 
-     * @author Juan Francisco Diaz Moreno
+     * @author Juan Francisco Diaz Moreno, Alberto Rodriguez
      */
     @Override
     public void actuacion() {
         
         while(!todosRescatados()) {
             
+            //Solicito percepcion
+            actualizarPercepcion();
             
+            if(!getGoal()){
+                
+            }
             
+            switch( estado ) {
+                case OCIOSO:
+                    
+                    break;
+                case MOVIENDO:
+                    
+                    break;
+                case OBJETIVO:
+                    
+                    break;
+            }
+           
         }
-        // SOLICITA PERCEPCIÓN
-        
-        // COMPRUEBA SI ESTÁ ENCIMA DE ALEMÁN
-        
-        // ESTADO == OCIOSO
-        //      ESPERA
-        
-        // ESTADO == MOVIENDO
-        //      SELECCIONA MEJOR MOVIMIENTO
-        //      SE MUEVE
-        
-        // ESTADO == OBJETIVO
-        //      SI ESTÁ AL NIVEL DEL SUELO
-        //          RECOGE ALEMÁN
-        //      NO LO ESTÁ
-        //          BAJA   
+          
     }
     
     /**
