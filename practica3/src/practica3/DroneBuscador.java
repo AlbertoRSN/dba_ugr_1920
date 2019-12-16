@@ -44,7 +44,9 @@ public class DroneBuscador extends AbstractDrone {
     @Override
     public void actuacion() {
         seleccionPrimerObjetivo();
+        System.out.println( getRolname() + "- primer objetivo seleccionado." );
         actualizarPercepcion();
+        System.out.println( getRolname() + " - percepción actualizada." );
         subirMaxima();
         
         //Mientras los alemanes encontrados no superen al numero total a rescatar
