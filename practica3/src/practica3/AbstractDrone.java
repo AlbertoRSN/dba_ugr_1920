@@ -228,7 +228,7 @@ public abstract class AbstractDrone extends SuperAgent {
     /**
      * Funcion para realizar el checkin, es decir, situar los drones en el mapa
      * 
-     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran, Alicia Rodriguez
      */
     private void checkin(){
         System.out.println(rolname + " inicializando CHECKIN...");
