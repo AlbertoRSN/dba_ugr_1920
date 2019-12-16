@@ -504,6 +504,88 @@ public abstract class AbstractDrone extends SuperAgent {
     
     /**
       *
+      * Funcion que calcula la altura del punto adyacente al drone que se le
+      * indica
+      * 
+      * @param move Siguiente movimiento que quiere realizarse
+      * @return Altura del punto al que se quiere desplazar
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private double calcularAlturaMove( String move ) {
+        
+        switch( move ) {
+            case "moveN":
+                return map.getLevel( posx, posy + 1 );
+            case "moveNE":
+                return map.getLevel( posx + 1, posy + 1 );
+            case "moveE":
+                return map.getLevel( posx + 1, posy );
+            case "moveSE":
+                return map.getLevel( posx + 1, posy - 1 );
+            case "moveS":
+                return map.getLevel( posx, posy - 1 );
+            case "moveSW":
+                return map.getLevel( posx - 1, posy - 1 );
+            case "moveW":
+                return map.getLevel( posx - 1, posy );
+            default:
+                return map.getLevel( posx - 1, posy + 1 );
+        }
+        
+    }
+    
+    /**
+      * 
+      * Funcion que comprueba si se puede realizar un movimiento o se necesita
+      * repostar antes.
+      * 
+      * @param move Siguiente movimiento que quiere realizarse
+      * @return Devuelve true si necesita repostar antes de moverse y false en
+      * caso contrario
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public boolean necesitoRepostar( String move ) {
+        
+        boolean necesita = false;
+        
+        double siguienteAltura = calcularAlturaMove( move );
+        double diferenciaAltura = ( posz - siguienteAltura) / 5;
+        
+        //Convierte el valor a positivo para calcular el gasto total de los movimientos
+        if(diferenciaAltura < 0 )
+            diferenciaAltura *= -1;
+        
+        double necesario = gastoFuel + diferenciaAltura * gastoFuel;
+        
+        //Comprueba el nivel minimo de bateria
+        if( ( fuel - necesario ) < MINFUEL )
+            necesita = true;
+        
+        return necesita;
+        
+    }
+    
+    /**
+     * 
+     * Funcion que comprueba si un drone puede realizar el movimiento que
+     * quiere en funcion de su altura actual
+     * 
+     * @param move Siguiente movimiento que quiere realizarse
+     * @return Devuelve true si el drone puede moverse a esa casilla (la altura
+     * a la que vuela es mayor que la altura de la casilla)
+     * @Author Juan Francisco Diaz Moreno
+     * 
+     */
+    public boolean puedoAcceder( String move ) {
+        
+        return posz > calcularAlturaMove( move );
+        
+    }
+    
+    /**
+      *
       * Funcion para subir hasta la altura maxima del drone
       * 
       * @Author Juan Francisco Diaz Moreno
