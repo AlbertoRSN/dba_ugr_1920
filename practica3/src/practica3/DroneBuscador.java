@@ -47,7 +47,10 @@ public class DroneBuscador extends AbstractDrone {
         System.out.println( getRolname() + "- primer objetivo seleccionado." );
         actualizarPercepcion();
         System.out.println( getRolname() + " - percepción actualizada." );
+        //repostar();
+        System.out.println( getRolname() + " - refuel." );
         subirMaxima();
+        System.out.println( getRolname() + " - subió a su altura máxima.");
         
         //Mientras los alemanes encontrados no superen al numero total a rescatar
         while( ( getAlemanesEncontrados() < getAlemanesTotales() ) || recorridoTerminado ) {

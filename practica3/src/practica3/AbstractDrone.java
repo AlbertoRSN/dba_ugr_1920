@@ -256,6 +256,7 @@ public abstract class AbstractDrone extends SuperAgent {
         
         try {
             inbox = this.receiveACLMessage();
+            reply = inbox.getReplyWith();
         } catch (InterruptedException ex) {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -313,47 +314,52 @@ public abstract class AbstractDrone extends SuperAgent {
         this.send(outbox);
         
         //Recepcion del mensaje
-        do {
-            try {
-                inbox = this.receiveACLMessage();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } while(inbox.getPerformativeInt() != ACLMessage.INFORM);
         
-        JsonObject percepcion = (Json.parse(inbox.getContent()).asObject());
+        try {
+            inbox = this.receiveACLMessage();
+            reply = inbox.getReplyWith();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
-        //GPS
-        JsonObject coordenadas = percepcion.get("gps").asObject();
-        posx = coordenadas.get("x").asInt();
-        posy = coordenadas.get("y").asInt();
-        posz = coordenadas.get("z").asInt();
-        
-        // FUEL
-        fuel = percepcion.get("fuel").asDouble();
-        
-        // GONIO
-        JsonObject gonio = percepcion.get("gonio").asObject();
-        gonioDistancia = gonio.get("distance").asDouble();
-        gonioAngulo = gonio.get("angle").asDouble();
-        
-        // INFRARED
-        infrared = percepcion.get("infrared").asArray();
-        
-        // AWACS
-        awacs = percepcion.get("awacs").asArray();
-        
-        // STATUS
-        status = percepcion.get("status").asString();
-        
-        // GOAL
-        goal = percepcion.get("goal").asBoolean();
-        
-        // TORESCUE
-        torescue = percepcion.get("torescue").asInt();
-        
-        // ENERGY
-        energy = percepcion.get("energy").asInt();
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            JsonObject percepcion = contenido.get( "result" ).asObject();
+
+            //GPS
+            JsonObject coordenadas = percepcion.get("gps").asObject();
+            posx = coordenadas.get("x").asInt();
+            posy = coordenadas.get("y").asInt();
+            posz = coordenadas.get("z").asInt();
+
+            // FUEL
+            fuel = percepcion.get("fuel").asDouble();
+
+            // GONIO
+            JsonObject gonio = percepcion.get("gonio").asObject();
+            gonioDistancia = gonio.get("distance").asDouble();
+            gonioAngulo = gonio.get("angle").asDouble();
+
+            // INFRARED
+            infrared = percepcion.get("infrared").asArray();
+
+            // AWACS
+            awacs = percepcion.get("awacs").asArray();
+
+            // STATUS
+            status = percepcion.get("status").asString();
+
+            // GOAL
+            goal = percepcion.get("goal").asBoolean();
+
+            // TORESCUE
+            torescue = percepcion.get("torescue").asInt();
+
+            // ENERGY
+            energy = percepcion.get("energy").asInt();
+        } else {
+            System.out.println( rolname + " no ha recibido bien la percepción." );
+        }
     }
     
     /**
@@ -370,12 +376,12 @@ public abstract class AbstractDrone extends SuperAgent {
             //En la esquina superior izquierda
             case "FLY":
                 posx = guia;
-                posy = map.getHeight() - guia;
+                posy = guia;
                 break;
             //En la esquina inferior derecha
             case "SPARROW":
                 posx = map.getWidth() - guia;
-                posy = guia;
+                posy = map.getHeight() - guia;
                 break;
             //En el centro
             case "HAWK":
@@ -412,6 +418,7 @@ public abstract class AbstractDrone extends SuperAgent {
         
         try {
             inbox = this.receiveACLMessage();
+            reply = inbox.getReplyWith();
         } catch (InterruptedException ex) {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -439,14 +446,11 @@ public abstract class AbstractDrone extends SuperAgent {
       * @Author Juan Francisco Diaz Moreno, Alberto Rodriguez
       * 
       */
-    private void repostar() {
+    public void repostar() {
         
         //Si la energia global que queda es suficiente para repostar, entonces me muevo, si no no gasto energia en repostar.
         if(energy >= 100-fuel){
-            while( posz > map.getLevel( posx, posy ) ) {
-                enviarMove( "moveDW" );
-            }
-            
+            bajarSuelo();
             enviarRefuel();
         }
         else{
@@ -481,6 +485,7 @@ public abstract class AbstractDrone extends SuperAgent {
         
         try {
             inbox = this.receiveACLMessage();
+            reply = inbox.getReplyWith();
         } catch (InterruptedException ex) {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -490,7 +495,9 @@ public abstract class AbstractDrone extends SuperAgent {
             fuel -= gastoFuel;
             actualizarPercepcion();
         } else {
-            System.out.println( "Drone " + rolname + " ERROR ENVIARMOVE: " + inbox.getPerformative() );
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "Drone " + rolname + " ERROR ENVIARMOVE: " + inbox.getPerformative() + " - result: " + result );
         }
         
     }
