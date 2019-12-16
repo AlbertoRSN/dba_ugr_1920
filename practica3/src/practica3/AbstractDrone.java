@@ -510,6 +510,46 @@ public abstract class AbstractDrone extends SuperAgent {
     
     /**
       *
+      * Funcion que envia el mensaje de rescue y recibe su respuesta
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public void enviarRescue() {
+        
+        outbox = new ACLMessage();
+        outbox.setPerformative( ACLMessage.REQUEST );
+        outbox.setSender( this.getAid() );
+        outbox.setReceiver( server );
+        outbox.setConversationId( convID );
+        outbox.setInReplyTo( reply );
+        
+        JsonObject command = new JsonObject();
+        command.add( "command", "rescue" );
+        outbox.setContent( command.toString() );
+        
+        this.send( outbox );
+        
+        try {
+            inbox = this.receiveACLMessage();
+            reply = inbox.getReplyWith();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            actualizarPercepcion();
+            System.out.println( "¡El drone rescue ha rescatado un alemán! Solo faltan: " + torescue );
+        } else {
+            JsonObject contenido = ( Json.parse( inbox.getContent() ).asObject() );
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "ERROR RESCUE: " + inbox.getPerformative() + " - result: " + result );
+        }
+        
+    }
+    
+    /**
+      *
       * Funcion que calcula la altura del punto adyacente al drone que se le
       * indica
       * 

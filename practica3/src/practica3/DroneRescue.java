@@ -69,25 +69,11 @@ public class DroneRescue extends AbstractDrone {
     public void actuacion() {
         
         while(!todosRescatados()) {
-            
-            //Solicito percepcion
             actualizarPercepcion();
+            System.out.println( getRolname() + " - percepción actualizada." );
             
-            if(!getGoal()){
-                
-            }
-            
-            switch( estado ) {
-                case OCIOSO:
-                    
-                    break;
-                case MOVIENDO:
-                    
-                    break;
-                case OBJETIVO:
-                    
-                    break;
-            }
+            if( getGoal() )
+                inicioRescate();
            
         }
           
@@ -103,5 +89,20 @@ public class DroneRescue extends AbstractDrone {
     public String calcularSiguienteMovimiento() {
         String movimiento = null;
         return movimiento;
+    }
+    
+    /**
+      *
+      * Funcion que realiza el rescate: baja hasta el suelo y manda el mensaje
+      * correspondiente
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void inicioRescate() {
+        
+        bajarSuelo();
+        enviarRescue();
+        
     }
 }
