@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 /**
  * Clase principal para el interlocutor que se comunica con el servidor
  * 
- * @author Juan Francisco Diaz Moreno, Alberto Rodriguez, Ana Rodriguez
+ * @author Juan Francisco Diaz Moreno, Alberto Rodriguez, Ana Rodriguez, Alicia Rodriguez
  */
 public class Interlocutor extends SuperAgent {
     //Mapa que vamos a usar
