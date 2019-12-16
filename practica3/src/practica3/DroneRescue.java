@@ -4,7 +4,14 @@
  */
 package practica3;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Clase principal para los drones de rescate
@@ -21,6 +28,9 @@ public class DroneRescue extends AbstractDrone {
     private int alemanesIniciales;
     private int alemanesRescatados;
     
+    // Vector de alemanes detectados
+    private ArrayList<CoordenadaXY> objetivos;
+    
     /**
      * Constructor de la clase DroneRescue
      * @param aid tipo de drone buscador
@@ -33,6 +43,7 @@ public class DroneRescue extends AbstractDrone {
         super(aid, mapa);
         estado = EstadoRescue.OCIOSO;
         alemanesRescatados = 0;
+        objetivos = new ArrayList();
     }
     
     /**
@@ -54,7 +65,7 @@ public class DroneRescue extends AbstractDrone {
     public boolean todosRescatados() {
         boolean rescatados = false;
         
-        if(alemanesIniciales == alemanesRescatados)
+        if( alemanesIniciales == alemanesRescatados )
             rescatados = true;
         
         return rescatados;
@@ -68,15 +79,63 @@ public class DroneRescue extends AbstractDrone {
     @Override
     public void actuacion() {
         
+        actualizarPercepcion();
+        System.out.println( getRolname() + " - percepción actualizada." );
+        alemanesIniciales = getToRescue();
+        System.out.println( "TODOS RESCATADOS = " + todosRescatados() );
+        
         while(!todosRescatados()) {
             actualizarPercepcion();
             System.out.println( getRolname() + " - percepción actualizada." );
             
-            if( getGoal() )
+            if( getGoal() ) {
                 inicioRescate();
+                quitarAleman( getCoordenadasXY() );
+            }
+            
+            if ( objetivos.isEmpty() ) {
+                recibirDetectados();
+            }
            
         }
           
+    }
+    
+    /**
+      *
+      * Funcion para esperar a recibir un mensaje con alemanes
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void recibirDetectados() {
+        
+        ACLMessage inbox = new ACLMessage();
+        
+        try {
+            inbox = this.receiveACLMessage();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DroneRescue.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            
+            JsonArray contenido = ( Json.parse( inbox.getContent() ).asArray() );
+            
+            for( int i = 0; i < contenido.size(); i++ ) {
+                int x = contenido.get(i).asObject().get( "x" ).asInt();
+                int y = contenido.get(i).asObject().get( "y" ).asInt();
+                
+                if( nuevoAleman( x, y ) )
+                    insertarAleman( x, y );
+            }
+            
+        } else {
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "Drone " + getRolname() + " ERROR RECIBIR ALEMANES: " + inbox.getPerformative() + " - result: " + result );
+        }
+        
     }
     
     /**
@@ -89,6 +148,99 @@ public class DroneRescue extends AbstractDrone {
     public String calcularSiguienteMovimiento() {
         String movimiento = null;
         return movimiento;
+    }
+    
+    /**
+      *
+      * Funcion que comprueba si un aleman ya habia sido detectado (si sus
+      * coordenadas estan en el vector de objetivos)
+      * 
+      * @param x Coordenada x del aleman a buscar
+      * @param y Coordenada y del aleman a buscar
+      * @return Devuelve true si el aleman no estaba en el vector y false si si
+      * que lo estaba
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private boolean nuevoAleman( int x, int y ) {
+        
+        boolean nuevo = true;
+        
+        for( int i = 0; i < objetivos.size() && nuevo; i++ )
+            if( objetivos.get(i).getX() == x && objetivos.get(i).getY() == y )
+                nuevo = false;
+        
+        return nuevo;
+    }
+    
+    /**
+      * 
+      * Funcion que saca un aleman del vector de objetivos cuando es rescatado
+      * 
+      * @param aleman Coordenadas del aleman a quitar
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void quitarAleman( CoordenadaXY aleman ) {
+        
+        objetivos.remove( aleman );
+        ordenarAlemanes();
+        
+    }
+    
+    /**
+      *
+      * Funcion que inserta las coordenadas de un aleman en el vector de
+      * objetivos
+      * 
+      * @param x Coordenada x del aleman a insertar
+      * @param y Coordenada y del aleman a insertar
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void insertarAleman( int x, int y ) {
+        
+        CoordenadaXY aleman = new CoordenadaXY( x, y );
+        objetivos.add( aleman );
+        ordenarAlemanes();
+        
+    }
+    
+    /**
+      *
+      * Funcion que ordena el vector de objetivos segun su proximidad al drone
+      * 
+      * @Author Juan Francisco Diaz Moreno, Valentine Seguineau
+      * 
+      */
+    private void ordenarAlemanes() {
+        
+        if( !objetivos.isEmpty() ) {
+            ArrayList<CoordenadaXY> ordenados = new ArrayList();
+            double min, distancia;
+            int pos;
+
+            while( !objetivos.isEmpty() ) {
+                min = objetivos.get(0).calcularDistancia( getCoordenadasXY() );
+                pos = 0;
+
+                for( int i = 1; i < objetivos.size(); i++ ) {
+                    distancia = objetivos.get(i).calcularDistancia( getCoordenadasXY() );
+
+                    if( distancia < min ) {
+                        min = distancia;
+                        pos = i;
+                    }
+                }
+
+                ordenados.add( objetivos.get(pos) );
+                objetivos.remove(pos);
+            }
+
+            for( CoordenadaXY c : ordenados )
+                objetivos.add(c);
+        }
+        
     }
     
     /**
