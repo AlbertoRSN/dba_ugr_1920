@@ -95,7 +95,7 @@ public abstract class AbstractDrone extends SuperAgent {
         rolname = this.getAid().name;
         nombreMapa = mapa;
         inicializarNumeroAlemanes();
-        inicializarCaracteristicas();
+        //inicializarCaracteristicas();
         inicializarMapa();
         inicializarPosicion();
     }
@@ -264,6 +264,12 @@ public abstract class AbstractDrone extends SuperAgent {
         if(inbox.getPerformativeInt() == ACLMessage.INFORM){
             reply = inbox.getReplyWith();
             System.out.println("CHECKIN BIEN!!!!!!! UEEEE -> REPLY: " + reply);
+            JsonObject recibido;
+            recibido = Json.parse( this.inbox.getContent()).asObject();
+            alturaMax = recibido.get("maxlevel").asInt();
+            visibilidad = recibido.get("visibility").asInt();
+            rango = recibido.get("range").asInt();
+            gastoFuel =  recibido.get("fuelrate").asDouble();
         }
         else{
             System.out.println("MAL CHECKIN!");
@@ -283,7 +289,7 @@ public abstract class AbstractDrone extends SuperAgent {
         
         outbox = new ACLMessage();
         outbox.setSender(this.getAid());
-        outbox.setReceiver(new AgentID("Interlocutor-GL"));
+        outbox.setReceiver(new AgentID("Interlocutor-GLA"));
         outbox.setPerformative(ACLMessage.INFORM);
         outbox.setContent(mensaje);
         this.send(outbox);
