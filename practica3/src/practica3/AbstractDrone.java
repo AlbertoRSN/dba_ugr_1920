@@ -61,7 +61,8 @@ public abstract class AbstractDrone extends SuperAgent {
     private ACLMessage inbox;
     
     //Sensores para la percepcion
-    private int posx, posy, posz;
+    private CoordenadaXY posxy;
+    private int posz;
     private double fuel;
     private double gonioDistancia;
     private double gonioAngulo;
@@ -243,8 +244,8 @@ public abstract class AbstractDrone extends SuperAgent {
         objeto.add("command", "checkin");
         objeto.add("session", session);
         objeto.add("rol", rolname);
-        objeto.add("x", posx);
-        objeto.add("y", posy);
+        objeto.add("x", posxy.getX() );
+        objeto.add("y", posxy.getY() );
         //objeto.add("key", key);
         
         String content = objeto.toString();
@@ -334,8 +335,8 @@ public abstract class AbstractDrone extends SuperAgent {
 
             //GPS
             JsonObject coordenadas = percepcion.get("gps").asObject();
-            posx = coordenadas.get("x").asInt();
-            posy = coordenadas.get("y").asInt();
+            posxy.setX(coordenadas.get( "x" ).asInt() );
+            posxy.setY(coordenadas.get( "y" ).asInt() );
             posz = coordenadas.get("z").asInt();
 
             // FUEL
@@ -381,23 +382,20 @@ public abstract class AbstractDrone extends SuperAgent {
         switch(rolname) {
             //En la esquina superior izquierda
             case "FLY":
-                posx = guia;
-                posy = guia;
+                posxy = new CoordenadaXY( guia, guia );
                 break;
             //En la esquina inferior derecha
             case "SPARROW":
-                posx = map.getWidth() - guia;
-                posy = map.getHeight() - guia;
+                posxy = new CoordenadaXY( map.getWidth() - guia, map.getWidth() - guia );
                 break;
             //En el centro
             case "HAWK":
-                posx = map.getWidth() / 2;
-                posy = map.getHeight() / 2;
+                posxy = new CoordenadaXY( map.getWidth() / 2, map.getWidth() / 2 );
                 break;
             //Casi al lado del hawk (para que no se choquen)
             case "RESCUE":
-                posx = map.getWidth() / 2;
-                posy = ( map.getHeight() / 2 ) + 1;
+                posxy = new CoordenadaXY( map.getWidth() / 2, ( map.getWidth() / 2 ) + 1 );
+                break;
         }
     }
     
@@ -562,21 +560,21 @@ public abstract class AbstractDrone extends SuperAgent {
         
         switch( move ) {
             case "moveN":
-                return map.getLevel( posx, posy + 1 );
+                return map.getLevel( posxy.getX(), posxy.getY() + 1 );
             case "moveNE":
-                return map.getLevel( posx + 1, posy + 1 );
+                return map.getLevel( posxy.getX() + 1, posxy.getY() + 1 );
             case "moveE":
-                return map.getLevel( posx + 1, posy );
+                return map.getLevel( posxy.getX() + 1, posxy.getY() );
             case "moveSE":
-                return map.getLevel( posx + 1, posy - 1 );
+                return map.getLevel( posxy.getX() + 1, posxy.getY() - 1 );
             case "moveS":
-                return map.getLevel( posx, posy - 1 );
+                return map.getLevel( posxy.getX(), posxy.getY() - 1 );
             case "moveSW":
-                return map.getLevel( posx - 1, posy - 1 );
+                return map.getLevel( posxy.getX() - 1, posxy.getY() - 1 );
             case "moveW":
-                return map.getLevel( posx - 1, posy );
+                return map.getLevel( posxy.getX() - 1, posxy.getY() );
             default:
-                return map.getLevel( posx - 1, posy + 1 );
+                return map.getLevel( posxy.getX() - 1, posxy.getY() + 1 );
         }
         
     }
@@ -654,7 +652,7 @@ public abstract class AbstractDrone extends SuperAgent {
     public void bajarSuelo() {
         
         
-        while( posz > map.getLevel( posx, posy ) )
+        while( posz > map.getLevel( posxy.getX(), posxy.getY() ) )
             enviarMove( "moveDW" );
         
     }
@@ -704,7 +702,7 @@ public abstract class AbstractDrone extends SuperAgent {
       */
     public boolean estoyEnObjetivo() {
         
-        return ( ( posx == objetivox ) && ( posy == objetivoy ) );
+        return ( ( posxy.getX() == objetivox ) && ( posxy.getY() == objetivoy ) );
         
     }
     
@@ -762,7 +760,7 @@ public abstract class AbstractDrone extends SuperAgent {
      * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
      */
     public int getPosx() {
-        return posx;
+        return posxy.getX();
     }
     
     /**
@@ -772,7 +770,7 @@ public abstract class AbstractDrone extends SuperAgent {
      * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
      */
     public int getPosy() {
-        return posy;
+        return posxy.getY();
     }
     
     /**
@@ -783,6 +781,18 @@ public abstract class AbstractDrone extends SuperAgent {
      */
     public int getVisibilidad() {
         return visibilidad;
+    }
+    
+    /**
+      *
+      * Getter de posxy
+      * 
+      * @return Coordenadas x e y del drone
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public CoordenadaXY getCoordenadasXY() {
+        return posxy;
     }
     
     /**
@@ -892,6 +902,18 @@ public abstract class AbstractDrone extends SuperAgent {
       */
     public JsonArray getInfrared() {
         return infrared;
+    }
+    
+    /**
+      *
+      * Getter de torescue
+      * 
+      * @return Devuelve los alemanes que quedan por rescatar
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public int getToRescue() {
+        return torescue;
     }
     
     @Override
