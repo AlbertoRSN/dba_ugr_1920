@@ -58,7 +58,17 @@ public class DroneBuscador extends AbstractDrone {
             if( estoyEnObjetivo() )
                 siguienteObjetivo();
             
-            enviarMove( calcularSiguienteMovimiento() );
+            String siguienteMovimiento = calcularSiguienteMovimiento();
+            
+            //while( !puedoAcceder( siguienteMovimiento ) )
+                //siguienteMovimiento = redirigirMovimiento( siguienteMovimiento );
+            
+            if( necesitoRepostar( siguienteMovimiento ) ) {
+                repostar();
+                subirMaxima();
+            }
+            
+            enviarMove( siguienteMovimiento );
       
         }
     }
@@ -211,6 +221,38 @@ public class DroneBuscador extends AbstractDrone {
         }
         return movimiento;
     }
+    
+    /**
+      * 
+      * Funcion que calcula el siguiente movimiento si no puede acceder al lugar
+      * al que queria moverse antes
+      * 
+      * @param move Movimiento que quiere realizar
+      * @return Devuelve el siguiente movimiento recomendado a realizar en 
+      * funcion del que queria realizar
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    /*
+    public String redirigirMovimiento( String move ) {
+        
+        switch( move ) {
+            case "moveN":
+                return "moveNE";
+            case "moveNE":
+                return "moveNW";
+            case "moveNW":
+                return "moveE";
+            case "moveE":
+                return "moveSE";
+            case "moveSE":
+                return 
+            default:
+                return "moveN";
+        }
+        
+    }
+    */
     
     
     /**
