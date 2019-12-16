@@ -212,7 +212,7 @@ public abstract class AbstractDrone extends SuperAgent {
             //reply = "REPLY-" + key;
             
             convID = key ;
-            reply = key;
+            reply = inbox.getReplyWith();
             
             this.enviarOK();
         }
@@ -230,7 +230,7 @@ public abstract class AbstractDrone extends SuperAgent {
      * 
      * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
      */
-    private void checkin() {
+    private void checkin(){
         System.out.println(rolname + " inicializando CHECKIN...");
         
         outbox = new ACLMessage();
@@ -253,6 +253,20 @@ public abstract class AbstractDrone extends SuperAgent {
         this.send(outbox);
         
         System.out.println(rolname + " enviando " + content);
+        
+        try {
+            inbox = this.receiveACLMessage();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if(inbox.getPerformativeInt() == ACLMessage.INFORM){
+            reply = inbox.getReplyWith();
+            System.out.println("CHECKIN BIEN!!!!!!! UEEEE -> REPLY: " + reply);
+        }
+        else{
+            System.out.println("MAL CHECKIN!");
+        }
     }
     
     /**
@@ -718,6 +732,31 @@ public abstract class AbstractDrone extends SuperAgent {
       */
     public boolean getGoal() {
         return goal;
+    }
+    
+        /**
+      *
+      * Getter del rango
+      * 
+      * @return devuelve rango del drone
+      * @Author Juanfran
+      * 
+      */
+    public int getRango() {
+        return rango;
+    }
+    
+        
+    /**
+      *
+      * Getter del rango
+      * 
+      * @return devuelve rango del drone
+      * @Author Juanfran
+      * 
+      */
+    public JsonArray getInfrared() {
+        return infrared;
     }
     
     @Override

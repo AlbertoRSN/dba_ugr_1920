@@ -4,8 +4,10 @@
  */
 package practica3;
 
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.AgentID;
+import java.util.ArrayList;
 
 /**
  * Clase principal para los drones buscadores (fly,hawck y sparrow)
@@ -204,4 +206,69 @@ public class DroneBuscador extends AbstractDrone {
         }
         return movimiento;
     }
+    
+    
+    /**
+      *
+      * Funcion que comprueba si el drone detecta alemanes, calcula sus
+      * coordenadas y las envia al rescue
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    
+    private void encontrarAlemanes() {
+        
+        JsonArray datos = getInfrared();
+        ArrayList<Integer> unosx = new ArrayList();
+        ArrayList<Integer> unosy = new ArrayList();
+        int tabla[][] = new int[getRango()][getRango()];
+        int contador = 0;
+    
+            /// Cambiar i j
+        for( int i = 0; i < getRango(); i++)
+            for( int j = 0; j < getRango(); j++ ) {
+                tabla[j][i] = datos.get(contador).asInt();
+                contador++;
+                
+                if( tabla[j][i] == 1 ) {
+                    unosx.add(i);
+                    unosy.add(j);
+                }
+            }
+        
+        if( unosx.size() > 0 ) {
+            
+            int dronex = getRango() / 2;
+            int droney = dronex;
+            int alemanx, alemany;
+            
+            for( int i = 0; i < unosx.size(); i++ ) {
+                if( unosx.get(i) < dronex )
+                    alemanx = getPosx() - ( dronex - unosx.get(i) );
+                else if( unosx.get(i) > dronex )
+                    alemanx = getPosx() + ( dronex - unosx.get(i) );
+                else
+                    alemanx = getPosx();
+                
+                if( unosy.get(i) < droney )
+                    alemany = getPosy() - ( droney - unosy.get(i) );
+                else if( unosy.get(i) > droney )
+                    alemany = getPosy() + ( droney - unosy.get(i) );
+                else
+                    alemany = getPosy();
+                
+                // INTRODUCIR COORDENADAS EN JSONARRAY
+                // ENVIAR JSONARRAY A RESCUE
+                    
+            }
+            
+        }
+        
+    }
+    
+    
 }
+
+
+
