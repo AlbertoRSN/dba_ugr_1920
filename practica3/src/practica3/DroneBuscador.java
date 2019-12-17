@@ -30,6 +30,7 @@ public class DroneBuscador extends AbstractDrone {
     // Variable que comprueba si ha detectado todos los alemanes en la ultima
     // vision
     private int ultimosDetectados;
+    private int alemanesRestantes;
     
     /**
      * Constructor de la clase DroneBuscador
@@ -54,7 +55,7 @@ public class DroneBuscador extends AbstractDrone {
       * 
       */
     private boolean todosDetectadosRescue() {
-        return getAlemanesEncontrados() == getAlemanesTotales();
+        return getAlemanesEncontrados() == alemanesRestantes;
     }
     
     /**
@@ -67,7 +68,7 @@ public class DroneBuscador extends AbstractDrone {
       * 
       */
     private boolean todosDetectadosEsteDrone() {
-        return ultimosDetectados == getAlemanesTotales();
+        return ultimosDetectados == alemanesRestantes;
     }
     
     /**
@@ -85,6 +86,8 @@ public class DroneBuscador extends AbstractDrone {
         System.out.println( getRolname() + " - refuel." );
         subirMaxima();
         System.out.println( getRolname() + " - subió a su altura máxima.");
+        
+        alemanesRestantes = getAlemanesTotales();
         
         //Mientras los alemanes encontrados no superen al numero total a rescatar
         while( !todosDetectadosRescue() || recorridoTerminado || !todosDetectadosEsteDrone() ) {    
@@ -128,16 +131,7 @@ public class DroneBuscador extends AbstractDrone {
         
         ACLMessage inbox = new ACLMessage();
         
-        try {
-            inbox = this.receiveACLMessage();
-            setReply( inbox.getReplyWith() );
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
-            System.out.println( "Drone RESCUE HA RECIBIDO ALEMANESSSSS" );
-        }
+        recibirRespuestaRescue();
         
     }
     
@@ -437,6 +431,50 @@ public class DroneBuscador extends AbstractDrone {
         
     }
     
+    /**
+      *
+      * Funcion que calcula los alemanes que quedan por detectar
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private void calcularAlemanesRestantes() {
+        
+        alemanesRestantes = getAlemanesTotales() - getAlemanesEncontrados();
+        
+    }
+    
+    /**
+      *
+      * Funcion que espera a que el Rescue confirme que le han llegado los
+      * alemanes
+      * 
+      * @Author Juan Francisco Diaz Moreno, Alberto Rodriguez
+      * 
+      */
+    public void recibirRespuestaRescue() {
+        
+        ACLMessage inbox = new ACLMessage();
+        
+        try {
+            inbox = receiveACLMessage();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DroneBuscador.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            
+            setAlemanesEncontrados( contenido.get( "encontrados" ).asInt() );
+            calcularAlemanesRestantes();
+            
+            
+        } else {
+            System.out.println( getRolname() + " - ERROR EN LA RESPUESTA DEL RESCUE" );
+        }
+        
+    }
     
 }
 
