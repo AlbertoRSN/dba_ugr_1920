@@ -81,8 +81,20 @@ public class DroneBuscador extends AbstractDrone {
      * 
      * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
      */
-    private void notificarPosicion() {
-        JsonObject coordenadas = calcularPosicion( );
+    private void enviarAlemanes( JsonArray alemanes ) {
+        
+        ACLMessage outbox = new ACLMessage();
+        
+        outbox.setSender( this.getAid() );
+        outbox.setReceiver( new AgentID( "RESCUE" ) );
+        outbox.setPerformative( ACLMessage.INFORM );
+        outbox.setConversationId( getConvID() );
+        outbox.setInReplyTo( getReply() );
+        outbox.setContent( alemanes.toString() );
+        
+        this.send( outbox );
+        System.out.println( "Enviando alemanes: " + alemanes.toString() );
+        
     }
     
     /**
@@ -270,10 +282,11 @@ public class DroneBuscador extends AbstractDrone {
     private void encontrarAlemanes() {
         
         JsonArray datos = getInfrared();
-        ArrayList<Integer> unosx = new ArrayList();
-        ArrayList<Integer> unosy = new ArrayList();
+        ArrayList<CoordenadaXY> unos = new ArrayList();
         int tabla[][] = new int[getRango()][getRango()];
         int contador = 0;
+        
+        System.out.println( getRolname() + " - infrared recibida: " + datos.toString() );
     
             /// Cambiar i j
         for( int i = 0; i < getRango(); i++)
@@ -281,37 +294,52 @@ public class DroneBuscador extends AbstractDrone {
                 tabla[j][i] = datos.get(contador).asInt();
                 contador++;
                 
-                if( tabla[j][i] == 1 ) {
-                    unosx.add(i);
-                    unosy.add(j);
-                }
+                if( tabla[j][i] == 1 ) 
+                    unos.add( new CoordenadaXY( i,j ) );
             }
         
-        if( unosx.size() > 0 ) {
+        System.out.println( getRolname() + " - número de alemanes detectados: " + unos.size() );
+        
+        for( CoordenadaXY c : unos )
+            System.out.println( getRolname() + " - alemanx = " + c.getX() + " alemany = " + c.getY() );
+        
+        if( unos.size() > 0 ) {
             
             int dronex = getRango() / 2;
             int droney = dronex;
             int alemanx, alemany;
+            ArrayList<CoordenadaXY> alemanes = new ArrayList();
             
-            for( int i = 0; i < unosx.size(); i++ ) {
-                if( unosx.get(i) < dronex )
-                    alemanx = getPosx() - ( dronex - unosx.get(i) );
-                else if( unosx.get(i) > dronex )
-                    alemanx = getPosx() + ( dronex - unosx.get(i) );
+            for( int i = 0; i < unos.size(); i++ ) {
+                if( unos.get(i).getX() < dronex )
+                    alemanx = getPosx() - ( dronex - unos.get(i).getX() );
+                else if( unos.get(i).getX() > dronex )
+                    alemanx = getPosx() + ( dronex - unos.get(i).getX() );
                 else
                     alemanx = getPosx();
                 
-                if( unosy.get(i) < droney )
-                    alemany = getPosy() - ( droney - unosy.get(i) );
-                else if( unosy.get(i) > droney )
-                    alemany = getPosy() + ( droney - unosy.get(i) );
+                if( unos.get(i).getY() < droney )
+                    alemany = getPosy() - ( droney - unos.get(i).getY() );
+                else if( unos.get(i).getY() > droney )
+                    alemany = getPosy() + ( droney - unos.get(i).getY() );
                 else
                     alemany = getPosy();
                 
-                // INTRODUCIR COORDENADAS EN JSONARRAY
-                // ENVIAR JSONARRAY A RESCUE
+                alemanes.add( new CoordenadaXY( alemanx, alemany ) );
                     
             }
+            
+            JsonArray contenido = new JsonArray();
+            
+            for( CoordenadaXY c : alemanes ) {
+                JsonObject pareja = new JsonObject();
+                pareja.add( "x", c.getX() );
+                pareja.add( "y", c.getY() );
+                contenido.add( pareja );
+                System.out.println( getRolname() + " - introduciendo alemanx = " + c.getX() + " alemany = " + c.getY() );
+            }
+            
+            enviarAlemanes( contenido );
             
         }
         
