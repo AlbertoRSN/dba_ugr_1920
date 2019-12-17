@@ -126,6 +126,19 @@ public class DroneBuscador extends AbstractDrone {
         this.send( outbox );
         //System.out.println( "Enviando alemanes: " + alemanes.toString() );
         
+        ACLMessage inbox = new ACLMessage();
+        
+        try {
+            inbox = this.receiveACLMessage();
+            setReply( inbox.getReplyWith() );
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            System.out.println( "Drone RESCUE HA RECIBIDO ALEMANESSSSS" );
+        }
+        
     }
     
     /**
