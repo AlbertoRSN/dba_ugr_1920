@@ -27,6 +27,7 @@ public class DroneRescue extends AbstractDrone {
     //Variables que controlan el numero de alemanes del mapa
     private int alemanesIniciales;
     private int alemanesRescatados;
+    private int nuevosAlemanes;
     
     // Vector de alemanes detectados
     private ArrayList<CoordenadaXY> objetivos;
@@ -131,8 +132,14 @@ public class DroneRescue extends AbstractDrone {
                 int x = contenido.get(i).asObject().get( "x" ).asInt();
                 int y = contenido.get(i).asObject().get( "y" ).asInt();
                 
-                if( nuevoAleman( x, y ) )
+                if( nuevoAleman( x, y ) ) {
                     insertarAleman( x, y );
+                    nuevosAlemanes++;
+                }
+                
+                setAlemanesEncontrados( getAlemanesEncontrados() + nuevosAlemanes );
+                
+                contestarBuscador( inbox );
             }
             
         } else {
@@ -390,6 +397,104 @@ public class DroneRescue extends AbstractDrone {
         
         while( getPosz() < alturaMax )
             enviarMove( "moveUP" );
+        
+    }
+    
+    /**
+      *
+      * Funcion que comprueba si un mensaje procede de un drone buscador
+      * 
+      * @param inbox Mensaje cuya procedencia se quiere comprobar
+      * @return Devuelve true si el mensaje procede de HAWK, SPARROW o FLY,
+      * false en otro caso
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      */
+    private boolean procedeBuscador( ACLMessage inbox ) {
+        
+        return ( "HAWK".equals( inbox.getSender().getLocalName() ) ||
+                 "SPARROW".equals( inbox.getSender().getLocalName() ) ||
+                 "FLY".equals( inbox.getSender().getLocalName() ) );
+                
+    }
+    
+    /**
+     * Funcion que solicita la percepcion del drone. Añade la posibilidad de que
+     * se interponga un mensaje procedente de los drones buscadores
+     * 
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
+    @Override
+    public void actualizarPercepcion() {
+        
+        //Envio de la solicitud
+        ACLMessage outbox = new ACLMessage();
+        outbox.setPerformative(ACLMessage.QUERY_REF);
+        outbox.setSender(this.getAid());
+        outbox.addReceiver( getServer() );
+        outbox.setConversationId( getConvID() );
+        outbox.setInReplyTo( getReply() );
+        
+        this.send(outbox);
+        
+        //Recepcion del mensaje
+        ACLMessage inbox = new ACLMessage();
+        
+        do{
+            
+            try {
+                inbox = this.receiveACLMessage();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            if( procedeBuscador( inbox ) ) {
+                System.out.println( getRolname() + " - recibiendo alemanes de " + inbox.getSender() );
+                recibirDetectados( inbox );
+            }
+            
+        }while ( procedeBuscador( inbox ) );
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            setReply( inbox.getReplyWith() );
+            
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            JsonObject percepcion = contenido.get( "result" ).asObject();
+
+            setPercepcion( percepcion );
+        } else {
+            
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "Drone " + getRolname() + " ERROR PERCEPCIÓN: " + inbox.getPerformative() + " - result: " + result );
+            
+        }
+    }
+    
+    /**
+      *
+      * Funcion que envia un mensaje de confirmacion al buscador cuyo mensaje ha
+      * procesado
+      * 
+      * @param inbox Mensaje al que se quiere contestar
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public void contestarBuscador( ACLMessage inbox ) {
+        
+        String sender = inbox.getSender().getLocalName();
+        
+        ACLMessage outbox = new ACLMessage();
+        outbox.setSender( this.getAid() );
+        outbox.setReceiver( new AgentID( sender ) );
+        outbox.setPerformative( ACLMessage.INFORM );
+        
+        JsonObject content = new JsonObject();
+        content.add( "totales", getAlemanesTotales() );
+        content.add( "encontrados", getAlemanesEncontrados() );
+        
+        outbox.setContent( content.toString() );
+        
+        this.send( outbox );
         
     }
     

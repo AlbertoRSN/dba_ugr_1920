@@ -304,7 +304,7 @@ public abstract class AbstractDrone extends SuperAgent {
     public abstract void actuacion();
     
     /**
-     * Funcion que actualiza la percepcion del drone
+     * Funcion que solicita la percepcion del drone
      * 
      * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
      */
@@ -321,26 +321,35 @@ public abstract class AbstractDrone extends SuperAgent {
         this.send(outbox);
         
         //Recepcion del mensaje
-        do{
-            try {
-                inbox = this.receiveACLMessage();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if("HAWK".equals(inbox.getSender().getLocalName()) ||
-                "SPARROW".equals(inbox.getSender().getLocalName()) ||
-                "FLY".equals(inbox.getSender().getLocalName()) ) {
-                System.out.println( getRolname() + " - recibiendo alemanes de " + inbox.getSender() );
-            }
-        }while (("HAWK".equals(inbox.getSender().getLocalName()) ||
-                "SPARROW".equals(inbox.getSender().getLocalName()) ||
-                "FLY".equals(inbox.getSender().getLocalName()) ) );
+
+        try {
+            inbox = this.receiveACLMessage();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
             reply = inbox.getReplyWith();
+            
             JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
             JsonObject percepcion = contenido.get( "result" ).asObject();
-
-            //GPS
+            
+            setPercepcion( percepcion );
+        } else {
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "Drone " + getRolname() + " ERROR PERCEPCIÓN: " + inbox.getPerformative() + " - result: " + result );
+        }
+    }
+    
+    /**
+     * Funcion que actualiza la percepcion del drone
+     * 
+     * @param percepcion Valores de la percepción recibida
+     * @author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+     */
+    public void setPercepcion( JsonObject percepcion ) {
+        //GPS
             JsonObject coordenadas = percepcion.get("gps").asObject();
             posxy.setX(coordenadas.get( "x" ).asInt() );
             posxy.setY(coordenadas.get( "y" ).asInt() );
@@ -371,11 +380,6 @@ public abstract class AbstractDrone extends SuperAgent {
 
             // ENERGY
             energy = percepcion.get("energy").asInt();
-        } else {
-            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
-            String result = contenido.get( "result" ).asString();
-            System.out.println( "Drone " + getRolname() + " ERROR PERCEPCIÓN: " + inbox.getPerformative() + " - result: " + result );
-        }
     }
     
     /**
@@ -819,6 +823,18 @@ public abstract class AbstractDrone extends SuperAgent {
      */
     public int getAlemanesEncontrados() {
         return alemanesEncontrados;
+    }
+    
+    /**
+      *
+      * Setter de AlemanesEncontrados
+      * 
+      * @param alemanesEncontrados Nueva cantidad de alemanes encontrados
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public void setAlemanesEncontrados( int alemanesEncontrados ) {
+        this.alemanesEncontrados = alemanesEncontrados;
     }
     
     /**
