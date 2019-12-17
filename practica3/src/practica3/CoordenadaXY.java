@@ -88,4 +88,19 @@ public class CoordenadaXY {
         
     }
     
+    /**
+      *
+      * Funcion que calcula el angulo entre dos puntos
+      * 
+      * @param otra Coordenada cuyo angulo quiero calcular con respecto a esta
+      * @return Angulo EN RADIANES entre dos CoordenadaXY
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public double calcularAngulo( CoordenadaXY otra ) {
+        
+        return Math.atan2( x - otra.x, y - otra.y );
+        
+    }
+    
 }

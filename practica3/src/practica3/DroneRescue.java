@@ -82,7 +82,9 @@ public class DroneRescue extends AbstractDrone {
         actualizarPercepcion();
         System.out.println( getRolname() + " - percepción actualizada." );
         alemanesIniciales = getToRescue();
-        System.out.println( "TODOS RESCATADOS = " + todosRescatados() );
+        
+        subirMaxima();
+        System.out.println( getRolname() + " - subió a su altura máxima." );
         
         while(!todosRescatados()) {
             actualizarPercepcion();
@@ -149,7 +151,45 @@ public class DroneRescue extends AbstractDrone {
      */
     @Override
     public String calcularSiguienteMovimiento() {
+        
+        double anguloEnRadianes = objetivos.get(0).calcularAngulo( getCoordenadasXY() );
+        double valorAngle = Math.toDegrees( anguloEnRadianes );
+        
         String movimiento = null;
+        
+        //DIRECCIÓN N SI ESTÁ ENTRE 330-360 ó 0-30
+        if((valorAngle >=  330 && valorAngle <= 360) || (valorAngle >= 0 && valorAngle < 30)){
+            movimiento = "moveN";
+        }
+        //DIRECCION NW SI ESTA ENTRE [300-330)
+        if(valorAngle >=  300 && valorAngle < 330 ){
+            movimiento = "moveNW";
+        }  
+        //DIRECCION NE SI ESTA ENTRE [30-60]
+        if(valorAngle >=  30 && valorAngle <= 60 ){
+            movimiento = "moveNE";
+        }           
+        //DIRECCION E SI ESTA ENTRE (60-120]
+        if(valorAngle >  60 && valorAngle <= 120 ){
+            movimiento = "moveE";
+        }      
+        //DIRECCION SE SI ESTA ENTRE (120-150]
+        if(valorAngle > 120 && valorAngle <= 150 ){
+            movimiento = "moveSE";
+        }   
+        //DIRECCION S SI ESTA ENTRE (150-210)
+        if(valorAngle > 150 && valorAngle < 210 ){
+            movimiento = "moveS";
+        }
+        //DIRECCION SW SI ESTA ENTRE [210-240]
+        if(valorAngle >= 210 && valorAngle <= 240 ){
+            movimiento = "moveSW";
+        }
+        //DIRECCION W SI ESTA ENTRE (240-300)
+        if(valorAngle > 240 && valorAngle < 300 ){
+            movimiento = "moveW";
+        }
+        
         return movimiento;
     }
     
@@ -264,6 +304,16 @@ public class DroneRescue extends AbstractDrone {
         
     }
     
+    /**
+      *
+      * Funcion que es llamada para recibir la respuesta del servidor de un
+      * movimiento. Tiene en cuenta que a parte de mensajes del servidor, pueden
+      * llegar mensajes de los buscadores
+      * 
+      * @param move Movimiento que se quiso realizar.
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
     public void recibirRespuestaMove( String move ) {
         
         ACLMessage inbox = new ACLMessage();
@@ -291,6 +341,13 @@ public class DroneRescue extends AbstractDrone {
         
     }
     
+    /**
+      *
+      * Funcion que espera un nuevo mensaje de parte de los buscadores
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
     private void esperarInbox() {
         
         ACLMessage inbox = new ACLMessage();
@@ -311,4 +368,20 @@ public class DroneRescue extends AbstractDrone {
             esperarInbox();
         }
     }
+    
+    /**
+      *
+      * Funcion para subir hasta la altura maxima del drone.
+      * Sube directamente sin considerar nada entre subida y subida.
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public void subirMaxima() {
+        
+        while( getPosz() < alturaMax )
+            enviarMove( "moveUP" );
+        
+    }
+    
 }
