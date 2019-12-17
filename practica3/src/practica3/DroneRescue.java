@@ -83,12 +83,7 @@ public class DroneRescue extends AbstractDrone {
         System.out.println( getRolname() + " - percepción actualizada." );
         alemanesIniciales = getToRescue();
         
-        subirMaxima();
-        System.out.println( getRolname() + " - subió a su altura máxima." );
-        
         while(!todosRescatados()) {
-            actualizarPercepcion();
-            System.out.println( getRolname() + " - percepción actualizada." );
             
             if( getGoal() ) {
                 inicioRescate();
@@ -97,17 +92,19 @@ public class DroneRescue extends AbstractDrone {
             
             if ( objetivos.isEmpty() ) {
                 esperarInbox();
-            } else {
-                
+            } else {    
+                System.out.println( getRolname() + " - comienza a subir." );
+                subirMaxima();
+                System.out.println( getRolname() + " - subió a su altura máxima." );
+
                 String siguienteMovimiento = calcularSiguienteMovimiento();
-                
+
                 if( necesitoRepostar( siguienteMovimiento ) ) {
                     repostar();
                     subirMaxima();
                 }
-                
+
                 enviarMove( siguienteMovimiento );
-                
             }
            
         }
@@ -123,9 +120,12 @@ public class DroneRescue extends AbstractDrone {
       */
     private void recibirDetectados( ACLMessage inbox ) {
         
+        System.out.println( getRolname() + " - mensaje recibido de " + inbox.getSender().toString() );
+        
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
             
             JsonArray contenido = ( Json.parse( inbox.getContent() ).asArray() );
+            System.out.println( getRolname() + " - recibido: " + contenido.toString() );
             
             for( int i = 0; i < contenido.size(); i++ ) {
                 int x = contenido.get(i).asObject().get( "x" ).asInt();
@@ -320,18 +320,22 @@ public class DroneRescue extends AbstractDrone {
         
         try {
             inbox = this.receiveACLMessage();
-            setReply( inbox.getReplyWith() );
         } catch (InterruptedException ex) {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
-            if( inbox.getSender() == getServer() ) {
-                System.out.println( "Drone " + getRolname() + " se ha movido: " + move );
-                actualizarPercepcion();
-            } else {
+            System.out.println( "ANAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA " +inbox.getSender().toString());
+            if( "qpid://HAWK@localhost:8080".equals(inbox.getSender()) ||
+                "qpid://SPARROW@localhost:8080".equals(inbox.getSender().toString()) ||
+                "qpid://FLY@localhost:8080".equals(inbox.getSender().toString()) ) {
+                System.out.println( getRolname() + " - recibiendo alemanes de " + inbox.getSender() );
                 recibirDetectados( inbox );
                 recibirRespuestaMove( move );
+            } else {
+                System.out.println( "Drone " + getRolname() + " se ha movido: " + move + ", recibido de " + inbox.getSender().toString() );
+                setReply( inbox.getReplyWith() );
+                actualizarPercepcion();
             }
         } else {
             JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
@@ -352,14 +356,18 @@ public class DroneRescue extends AbstractDrone {
         
         ACLMessage inbox = new ACLMessage();
         
+        System.out.println( getRolname() + " - esperando inbox" );
+        
         try {
             inbox = this.receiveACLMessage();
-            setReply( inbox.getReplyWith() );
         } catch (InterruptedException ex) {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        System.out.println( getRolname() + " - inbox recibido" );
+        
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            System.out.println( getRolname() + " - recibe INFORM" );
             recibirDetectados( inbox );
         } else {
             JsonObject contenido = (Json.parse(inbox.getContent()).asObject());

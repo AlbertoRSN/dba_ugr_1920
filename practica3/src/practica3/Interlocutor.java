@@ -176,14 +176,16 @@ public class Interlocutor extends SuperAgent {
      * @param objeto json que le pasamos para convertir en jsonArray
      * 
      * @author Luis Castillo
-     * @coauthor Alberto Rodriguez (Adaptacion del codigo)
+     * @coauthor Alberto Rodriguez (Adaptacion del codigo) VETE A LA MIERDA
+     * 
      */
     public void tratarMapa(JsonObject objeto){
     System.out.println("\n\n-------- TRATANDO EL MAPA ----------\nReading json file "+"./json/"+_filename+".json");
         File file = new File("./json/"+_filename+".json");
         if (file != null)
             try {
-                String str= new Scanner(file).useDelimiter("\\Z").next();
+                //String str= new Scanner(file).useDelimiter("\\Z").next();
+                String str = objeto.toString();
                 /// START
                 /// 1) A partir del JSONArray que me devuelve el INFORM de respuesta a SUBSCRIBE
                 JsonArray img = Json.parse(str).asObject().get("map").asArray();
@@ -207,6 +209,7 @@ public class Interlocutor extends SuperAgent {
                 /// título informativo
                 System.out.println("Saving file ./maps/"+mapa+"GL.png\n\n");
                 map.save("./maps/"+mapa+"GL.png");
+                System.out.println( "INTERLOCUTORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR ./maps/"+mapa+"GL.png" + map.getHeight());
             }  catch (Exception ex) {
                 System.err.println("***ERROR "+ex.toString());
             }

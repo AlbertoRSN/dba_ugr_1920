@@ -27,6 +27,10 @@ public class DroneBuscador extends AbstractDrone {
     // Es true si ha terminado su recorrido y puede dejar de moverse
     private boolean recorridoTerminado;
     
+    // Variable que comprueba si ha detectado todos los alemanes en la ultima
+    // vision
+    private int ultimosDetectados;
+    
     /**
      * Constructor de la clase DroneBuscador
      * @param aid tipo de drone buscador
@@ -38,6 +42,32 @@ public class DroneBuscador extends AbstractDrone {
     public DroneBuscador(AgentID aid, String mapa) throws Exception {
         super(aid, mapa);
         recorridoTerminado = false;
+    }
+    
+    /**
+      *
+      * Funcion que comprueba si el RESCUE ha detectado a todos los alemanes del
+      * mapa
+      * 
+      * @return Devuelve true si el RESCUE tiene detectados a todos los alemanes
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
+      * 
+      */
+    private boolean todosDetectadosRescue() {
+        return getAlemanesEncontrados() == getAlemanesTotales();
+    }
+    
+    /**
+      *
+      * Funcion que comprueba si este drone ha detectado a todos los alemanes
+      * del mapa
+      * 
+      * @return Devuelve true si el drone ha detectado a todos los alemanes
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    private boolean todosDetectadosEsteDrone() {
+        return ultimosDetectados == getAlemanesTotales();
     }
     
     /**
@@ -53,27 +83,28 @@ public class DroneBuscador extends AbstractDrone {
         System.out.println( getRolname() + " - percepción actualizada." );
         //repostar();
         System.out.println( getRolname() + " - refuel." );
+        subirMaxima();
+        System.out.println( getRolname() + " - subió a su altura máxima.");
         
         //Mientras los alemanes encontrados no superen al numero total a rescatar
-        while( ( getAlemanesEncontrados() < getAlemanesTotales() ) || recorridoTerminado ) {
-            
-            subirMaxima();
-            System.out.println( getRolname() + " - subió a su altura máxima.");
-            
+        while( !todosDetectadosRescue() || recorridoTerminado || !todosDetectadosEsteDrone() ) {    
+
             if( estoyEnObjetivo() )
                 siguienteObjetivo();
-            
+
             String siguienteMovimiento = calcularSiguienteMovimiento();
-            
+
             if( necesitoRepostar( siguienteMovimiento ) ) {
                 repostar();
                 subirMaxima();
             }
-            
+
             enviarMove( siguienteMovimiento );
             encontrarAlemanes();
       
         }
+        
+        System.out.println( getRolname() + " - todos los alemanes han sido detectados." );
     }
     
     /**
@@ -88,12 +119,12 @@ public class DroneBuscador extends AbstractDrone {
         outbox.setSender( this.getAid() );
         outbox.setReceiver( new AgentID( "RESCUE" ) );
         outbox.setPerformative( ACLMessage.INFORM );
-        outbox.setConversationId( getConvID() );
-        outbox.setInReplyTo( getReply() );
+        //outbox.setConversationId( getConvID() );
+        //outbox.setInReplyTo( getReply() );
         outbox.setContent( alemanes.toString() );
         
         this.send( outbox );
-        System.out.println( "Enviando alemanes: " + alemanes.toString() );
+        //System.out.println( "Enviando alemanes: " + alemanes.toString() );
         
     }
     
@@ -298,10 +329,10 @@ public class DroneBuscador extends AbstractDrone {
                     unos.add( new CoordenadaXY( i,j ) );
             }
         
-        System.out.println( getRolname() + " - número de alemanes detectados: " + unos.size() );
+        //System.out.println( getRolname() + " - número de alemanes detectados: " + unos.size() );
         
-        for( CoordenadaXY c : unos )
-            System.out.println( getRolname() + " - alemanx = " + c.getX() + " alemany = " + c.getY() );
+        //for( CoordenadaXY c : unos )
+            //System.out.println( getRolname() + " - alemanx = " + c.getX() + " alemany = " + c.getY() );
         
         if( unos.size() > 0 ) {
             
@@ -336,7 +367,7 @@ public class DroneBuscador extends AbstractDrone {
                 pareja.add( "x", c.getX() );
                 pareja.add( "y", c.getY() );
                 contenido.add( pareja );
-                System.out.println( getRolname() + " - introduciendo alemanx = " + c.getX() + " alemany = " + c.getY() );
+                //System.out.println( getRolname() + " - introduciendo alemanx = " + c.getX() + " alemany = " + c.getY() );
             }
             
             enviarAlemanes( contenido );
@@ -366,12 +397,12 @@ public class DroneBuscador extends AbstractDrone {
         }
         
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
-            System.out.println( "Drone " + getRolname() + " se ha movido: " + move );
+            //System.out.println( "Drone " + getRolname() + " se ha movido: " + move );
             actualizarPercepcion();
         } else {
             JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
             String result = contenido.get( "result" ).asString();
-            System.out.println( "Drone " + getRolname() + " ERROR ENVIARMOVE: " + inbox.getPerformative() + " - result: " + result );
+            //System.out.println( "Drone " + getRolname() + " ERROR ENVIARMOVE: " + inbox.getPerformative() + " - result: " + result );
         }
         
     }
@@ -386,7 +417,7 @@ public class DroneBuscador extends AbstractDrone {
       */
     public void subirMaxima() {
         
-        while( getPosz() < alturaMax ) {
+        while( ( getPosz() < alturaMax ) && !todosDetectadosEsteDrone() ) {
             enviarMove( "moveUP" );
             encontrarAlemanes();
         }

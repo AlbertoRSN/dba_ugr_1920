@@ -97,8 +97,6 @@ public abstract class AbstractDrone extends SuperAgent {
         nombreMapa = mapa;
         inicializarNumeroAlemanes();
         //inicializarCaracteristicas();
-        inicializarMapa();
-        inicializarPosicion();
     }
     
     /**
@@ -174,6 +172,7 @@ public abstract class AbstractDrone extends SuperAgent {
         map = new DBAMap();
         
         try {
+            System.out.println( "DRONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE ./maps/"+nombreMapa+"GL.png");
             map.load( "./maps/"+ nombreMapa +"GL.png" );
         } catch (IOException ex) {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
@@ -216,9 +215,9 @@ public abstract class AbstractDrone extends SuperAgent {
             reply = inbox.getReplyWith();
             
             this.enviarOK();
-        }
         checkin();
         actuacion(); //Cada drone tiene su metodo Actuacion sobreescrito!
+        }
 
         //Si es necesario respostar, reposta.
         //if(necesitoRepostar())
@@ -239,6 +238,9 @@ public abstract class AbstractDrone extends SuperAgent {
         outbox.setConversationId(convID);
         outbox.setSender(this.getAid());
         outbox.setReceiver(server);
+
+        inicializarMapa();
+        inicializarPosicion();
         
         JsonObject objeto = new JsonObject();
         objeto.add("command", "checkin");
@@ -324,12 +326,19 @@ public abstract class AbstractDrone extends SuperAgent {
         
         try {
             inbox = this.receiveACLMessage();
-            reply = inbox.getReplyWith();
         } catch (InterruptedException ex) {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        if( "qpid://HAWK@localhost:8080".equals(inbox.getSender().toString()) ||
+                "qpid://SPARROW@localhost:8080".equals(inbox.getSender().toString()) ||
+                "qpid://FLY@localhost:8080".equals(inbox.getSender().toString()) ) {
+            System.out.println( "SE ESTA LIANDO");
+            } else {
+                
+        
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            reply = inbox.getReplyWith();
             JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
             JsonObject percepcion = contenido.get( "result" ).asObject();
 
@@ -365,7 +374,10 @@ public abstract class AbstractDrone extends SuperAgent {
             // ENERGY
             energy = percepcion.get("energy").asInt();
         } else {
-            System.out.println( rolname + " no ha recibido bien la percepción." );
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "Drone " + getRolname() + " ERROR PERCEPCIÓN: " + inbox.getPerformative() + " - result: " + result );
+        }
         }
     }
     
@@ -375,8 +387,20 @@ public abstract class AbstractDrone extends SuperAgent {
      * @author Ana Rodriguez Duran, Alberto Rodriguez, Juan Francisco Diaz Moreno
      */
     public void inicializarPosicion(){  
+        int guia;
         
-        int guia = ( rango - 1 ) / 2;
+        switch( rolname ) {
+            case "FLY":
+                guia = 2;
+                break;
+            case "SPARROW":
+                guia = 5;
+                break;
+            default:
+                guia = -1;
+                break;
+        }
+        System.out.println( "VOY A INICIALIZAR POSICION DE " + rango);
         
         //Segun rolname sacamos el drone en una pos u otra
         switch(rolname) {
@@ -391,11 +415,14 @@ public abstract class AbstractDrone extends SuperAgent {
             //En el centro
             case "HAWK":
                 posxy = new CoordenadaXY( map.getWidth() / 2, map.getWidth() / 2 );
+                System.out.println( "COÑOOOOOOOOOOOOOOOOOOOOOOOO2 " + map.getWidth() + "/ 2 = " + posxy.getX() );
                 break;
             //Casi al lado del hawk (para que no se choquen)
             case "RESCUE":
                 posxy = new CoordenadaXY( map.getWidth() / 2, ( map.getWidth() / 2 ) + 1 );
                 break;
+            default:
+                System.out.println( "QUIEN COÑO SOY?" );
         }
     }
     
