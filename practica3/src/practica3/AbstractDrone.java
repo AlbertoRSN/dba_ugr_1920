@@ -920,6 +920,30 @@ public abstract class AbstractDrone extends SuperAgent {
     }
     
     /**
+      *
+      * Getter de reply
+      * 
+      * @return Devuelve el reply
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public String getReply() {
+        return reply;
+    }
+    
+    /**
+      *
+      * Getter de convID
+      * 
+      * @return Devuelve el convID
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public String getConvID() {
+        return convID;
+    }
+    
+    /**
      * 
      * Getter del identificador del servidor
      * 
