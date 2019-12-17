@@ -622,12 +622,7 @@ public abstract class AbstractDrone extends SuperAgent {
       * @Author Juan Francisco Diaz Moreno
       * 
       */
-    public void subirMaxima() {
-        
-        while( posz < alturaMax )
-            enviarMove( "moveUP" );
-        
-    }
+    public abstract void subirMaxima();
     
     /**
       *
@@ -758,6 +753,16 @@ public abstract class AbstractDrone extends SuperAgent {
      */
     public int getPosy() {
         return posxy.getY();
+    }
+    
+    /**
+     * Getter de posz
+     * @return posz posz
+     * 
+     * @author Juan Francisco Diaz Moreno
+     */
+    public int getPosz() {
+        return posz;
     }
     
     /**

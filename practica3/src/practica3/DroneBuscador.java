@@ -53,19 +53,17 @@ public class DroneBuscador extends AbstractDrone {
         System.out.println( getRolname() + " - percepción actualizada." );
         //repostar();
         System.out.println( getRolname() + " - refuel." );
-        subirMaxima();
-        System.out.println( getRolname() + " - subió a su altura máxima.");
         
         //Mientras los alemanes encontrados no superen al numero total a rescatar
         while( ( getAlemanesEncontrados() < getAlemanesTotales() ) || recorridoTerminado ) {
+            
+            subirMaxima();
+            System.out.println( getRolname() + " - subió a su altura máxima.");
             
             if( estoyEnObjetivo() )
                 siguienteObjetivo();
             
             String siguienteMovimiento = calcularSiguienteMovimiento();
-            
-            //while( !puedoAcceder( siguienteMovimiento ) )
-                //siguienteMovimiento = redirigirMovimiento( siguienteMovimiento );
             
             if( necesitoRepostar( siguienteMovimiento ) ) {
                 repostar();
@@ -73,6 +71,7 @@ public class DroneBuscador extends AbstractDrone {
             }
             
             enviarMove( siguienteMovimiento );
+            encontrarAlemanes();
       
         }
     }
@@ -318,6 +317,15 @@ public class DroneBuscador extends AbstractDrone {
         
     }
     
+    /**
+      *
+      * Funcion que es llamada para recibir la respuesta del servidor de un
+      * movimiento.
+      * 
+      * @param move Movimiento que se quiso realizar.
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
     public void recibirRespuestaMove( String move ) {
         
         ACLMessage inbox = new ACLMessage();
@@ -336,6 +344,23 @@ public class DroneBuscador extends AbstractDrone {
             JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
             String result = contenido.get( "result" ).asString();
             System.out.println( "Drone " + getRolname() + " ERROR ENVIARMOVE: " + inbox.getPerformative() + " - result: " + result );
+        }
+        
+    }
+    
+    /**
+      *
+      * Funcion para subir hasta la altura maxima del drone.
+      * Comprueba si detecta alemanes cada vez que sube. 
+      * 
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public void subirMaxima() {
+        
+        while( getPosz() < alturaMax ) {
+            enviarMove( "moveUP" );
+            encontrarAlemanes();
         }
         
     }
