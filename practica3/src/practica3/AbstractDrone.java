@@ -487,24 +487,11 @@ public abstract class AbstractDrone extends SuperAgent {
         
         this.send( outbox );
         
-        try {
-            inbox = this.receiveACLMessage();
-            reply = inbox.getReplyWith();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
-            System.out.println( "Drone " + rolname + " se ha movido: " + move );
-            fuel -= gastoFuel;
-            actualizarPercepcion();
-        } else {
-            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
-            String result = contenido.get( "result" ).asString();
-            System.out.println( "Drone " + rolname + " ERROR ENVIARMOVE: " + inbox.getPerformative() + " - result: " + result );
-        }
+        recibirRespuestaMove( move );
         
     }
+    
+    public abstract void recibirRespuestaMove( String move );
     
     /**
       *
@@ -914,6 +901,29 @@ public abstract class AbstractDrone extends SuperAgent {
       */
     public int getToRescue() {
         return torescue;
+    }
+    
+    /**
+      *
+      * Setter de reply
+
+      * @Author Juan Francisco Diaz Moreno
+      * 
+      */
+    public void setReply( String reply ) {
+        this.reply = reply;
+    }
+    
+    /**
+     * 
+     * Getter del identificador del servidor
+     * 
+     * @return Devuelve el identificador del servidor
+     * @Author Juan Francisco Diaz Moreno
+     * 
+     */
+    public AgentID getServer() {
+        return server;
     }
     
     @Override

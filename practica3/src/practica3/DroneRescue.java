@@ -94,7 +94,18 @@ public class DroneRescue extends AbstractDrone {
             }
             
             if ( objetivos.isEmpty() ) {
-                recibirDetectados();
+                esperarInbox();
+            } else {
+                
+                String siguienteMovimiento = calcularSiguienteMovimiento();
+                
+                if( necesitoRepostar( siguienteMovimiento ) ) {
+                    repostar();
+                    subirMaxima();
+                }
+                
+                enviarMove( siguienteMovimiento );
+                
             }
            
         }
@@ -108,15 +119,7 @@ public class DroneRescue extends AbstractDrone {
       * @Author Juan Francisco Diaz Moreno
       * 
       */
-    private void recibirDetectados() {
-        
-        ACLMessage inbox = new ACLMessage();
-        
-        try {
-            inbox = this.receiveACLMessage();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DroneRescue.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    private void recibirDetectados( ACLMessage inbox ) {
         
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
             
@@ -239,6 +242,9 @@ public class DroneRescue extends AbstractDrone {
 
             for( CoordenadaXY c : ordenados )
                 objetivos.add(c);
+            
+            setObjetivox( objetivos.get(0).getX() );
+            setObjetivoy( objetivos.get(0).getY() );
         }
         
     }
@@ -256,5 +262,53 @@ public class DroneRescue extends AbstractDrone {
         bajarSuelo();
         enviarRescue();
         
+    }
+    
+    public void recibirRespuestaMove( String move ) {
+        
+        ACLMessage inbox = new ACLMessage();
+        
+        try {
+            inbox = this.receiveACLMessage();
+            setReply( inbox.getReplyWith() );
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            if( inbox.getSender() == getServer() ) {
+                System.out.println( "Drone " + getRolname() + " se ha movido: " + move );
+                actualizarPercepcion();
+            } else {
+                recibirDetectados( inbox );
+                recibirRespuestaMove( move );
+            }
+        } else {
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "Drone " + getRolname() + " ERROR ENVIARMOVE: " + inbox.getPerformative() + " - result: " + result );
+        }
+        
+    }
+    
+    private void esperarInbox() {
+        
+        ACLMessage inbox = new ACLMessage();
+        
+        try {
+            inbox = this.receiveACLMessage();
+            setReply( inbox.getReplyWith() );
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            recibirDetectados( inbox );
+        } else {
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "Drone " + getRolname() + " ERROR RECIBIRDETECTADOS: " + inbox.getPerformative() + " - result: " + result );
+            esperarInbox();
+        }
     }
 }

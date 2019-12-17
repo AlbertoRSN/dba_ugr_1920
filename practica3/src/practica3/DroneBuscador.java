@@ -4,10 +4,14 @@
  */
 package practica3;
 
+import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Clase principal para los drones buscadores (fly,hawck y sparrow)
@@ -310,6 +314,28 @@ public class DroneBuscador extends AbstractDrone {
                     
             }
             
+        }
+        
+    }
+    
+    public void recibirRespuestaMove( String move ) {
+        
+        ACLMessage inbox = new ACLMessage();
+        
+        try {
+            inbox = this.receiveACLMessage();
+            setReply( inbox.getReplyWith() );
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
+            System.out.println( "Drone " + getRolname() + " se ha movido: " + move );
+            actualizarPercepcion();
+        } else {
+            JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
+            String result = contenido.get( "result" ).asString();
+            System.out.println( "Drone " + getRolname() + " ERROR ENVIARMOVE: " + inbox.getPerformative() + " - result: " + result );
         }
         
     }
