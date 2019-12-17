@@ -351,7 +351,7 @@ public class DroneBuscador extends AbstractDrone {
     /**
       *
       * Funcion para subir hasta la altura maxima del drone.
-      * Comprueba si detecta alemanes cada vez que sube.
+      * Comprueba si detecta alemanes cada vez que sube. 
       * 
       * @Author Juan Francisco Diaz Moreno
       * 
