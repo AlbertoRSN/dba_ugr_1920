@@ -172,7 +172,6 @@ public abstract class AbstractDrone extends SuperAgent {
         map = new DBAMap();
         
         try {
-            System.out.println( "DRONEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE ./maps/"+nombreMapa+"GL.png");
             map.load( "./maps/"+ nombreMapa +"GL.png" );
         } catch (IOException ex) {
             Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
@@ -222,7 +221,6 @@ public abstract class AbstractDrone extends SuperAgent {
         //Si es necesario respostar, reposta.
         //if(necesitoRepostar())
         //repostar();
-            
     }
     
     /**
@@ -292,7 +290,7 @@ public abstract class AbstractDrone extends SuperAgent {
         
         outbox = new ACLMessage();
         outbox.setSender(this.getAid());
-        outbox.setReceiver(new AgentID("Interlocutor-GLA"));
+        outbox.setReceiver(new AgentID("Interlocutor-GL"));
         outbox.setPerformative(ACLMessage.INFORM);
         outbox.setContent(mensaje);
         this.send(outbox);
@@ -323,20 +321,20 @@ public abstract class AbstractDrone extends SuperAgent {
         this.send(outbox);
         
         //Recepcion del mensaje
-        
-        try {
-            inbox = this.receiveACLMessage();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        if( "qpid://HAWK@localhost:8080".equals(inbox.getSender().toString()) ||
-                "qpid://SPARROW@localhost:8080".equals(inbox.getSender().toString()) ||
-                "qpid://FLY@localhost:8080".equals(inbox.getSender().toString()) ) {
-            System.out.println( "SE ESTA LIANDO");
-            } else {
-                
-        
+        do{
+            try {
+                inbox = this.receiveACLMessage();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AbstractDrone.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            if("HAWK".equals(inbox.getSender().getLocalName()) ||
+                "SPARROW".equals(inbox.getSender().getLocalName()) ||
+                "FLY".equals(inbox.getSender().getLocalName()) ) {
+                System.out.println( getRolname() + " - recibiendo alemanes de " + inbox.getSender() );
+            }
+        }while (("HAWK".equals(inbox.getSender().getLocalName()) ||
+                "SPARROW".equals(inbox.getSender().getLocalName()) ||
+                "FLY".equals(inbox.getSender().getLocalName()) ) );
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
             reply = inbox.getReplyWith();
             JsonObject contenido = (Json.parse(inbox.getContent()).asObject());
@@ -378,7 +376,6 @@ public abstract class AbstractDrone extends SuperAgent {
             String result = contenido.get( "result" ).asString();
             System.out.println( "Drone " + getRolname() + " ERROR PERCEPCIÓN: " + inbox.getPerformative() + " - result: " + result );
         }
-        }
     }
     
     /**
@@ -389,7 +386,7 @@ public abstract class AbstractDrone extends SuperAgent {
     public void inicializarPosicion(){  
         int guia;
         
-        switch( rolname ) {
+        switch(rolname) {
             case "FLY":
                 guia = 2;
                 break;
@@ -400,7 +397,7 @@ public abstract class AbstractDrone extends SuperAgent {
                 guia = -1;
                 break;
         }
-        System.out.println( "VOY A INICIALIZAR POSICION DE " + rango);
+        System.out.println("INICIANDO POSICION DE ..." + rolname);
         
         //Segun rolname sacamos el drone en una pos u otra
         switch(rolname) {
@@ -415,7 +412,6 @@ public abstract class AbstractDrone extends SuperAgent {
             //En el centro
             case "HAWK":
                 posxy = new CoordenadaXY( map.getWidth() / 2, map.getWidth() / 2 );
-                System.out.println( "COÑOOOOOOOOOOOOOOOOOOOOOOOO2 " + map.getWidth() + "/ 2 = " + posxy.getX() );
                 break;
             //Casi al lado del hawk (para que no se choquen)
             case "RESCUE":
@@ -478,7 +474,6 @@ public abstract class AbstractDrone extends SuperAgent {
       * 
       */
     public void repostar() {
-        
         //Si la energia global que queda es suficiente para repostar, entonces me muevo, si no no gasto energia en repostar.
         if(energy >= 100-fuel){
             bajarSuelo();
@@ -486,9 +481,7 @@ public abstract class AbstractDrone extends SuperAgent {
         }
         else{
             System.out.println("No queda suficiente energia para repostar...");
-        }
-        
-        
+        }   
     }
     
     /**
@@ -557,7 +550,6 @@ public abstract class AbstractDrone extends SuperAgent {
             String result = contenido.get( "result" ).asString();
             System.out.println( "ERROR RESCUE: " + inbox.getPerformative() + " - result: " + result );
         }
-        
     }
     
     /**
@@ -622,7 +614,6 @@ public abstract class AbstractDrone extends SuperAgent {
             necesita = true;
         
         return necesita;
-        
     }
     
     /**
@@ -639,7 +630,6 @@ public abstract class AbstractDrone extends SuperAgent {
     public boolean puedoAcceder( String move ) {
         
         return posz > calcularAlturaMove( move );
-        
     }
     
     /**
@@ -659,11 +649,8 @@ public abstract class AbstractDrone extends SuperAgent {
       * 
       */
     public void bajarSuelo() {
-        
-        
         while( posz > map.getLevel( posxy.getX(), posxy.getY() ) )
-            enviarMove( "moveDW" );
-        
+            enviarMove( "moveDW" );   
     }
     
     /**
@@ -938,8 +925,8 @@ public abstract class AbstractDrone extends SuperAgent {
     /**
       *
       * Setter de reply
-
-      * @Author Juan Francisco Diaz Moreno
+      * @param reply reply
+      * @author  Juan Francisco Diaz Moreno
       * 
       */
     public void setReply( String reply ) {

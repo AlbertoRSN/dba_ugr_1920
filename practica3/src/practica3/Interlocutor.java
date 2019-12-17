@@ -176,7 +176,7 @@ public class Interlocutor extends SuperAgent {
      * @param objeto json que le pasamos para convertir en jsonArray
      * 
      * @author Luis Castillo
-     * @coauthor Alberto Rodriguez (Adaptacion del codigo) VETE A LA MIERDA
+     * @coauthor Alberto Rodriguez (Adaptacion del codigo)
      * 
      */
     public void tratarMapa(JsonObject objeto){

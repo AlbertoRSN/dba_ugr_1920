@@ -311,9 +311,10 @@ public class DroneRescue extends AbstractDrone {
       * llegar mensajes de los buscadores
       * 
       * @param move Movimiento que se quiso realizar.
-      * @Author Juan Francisco Diaz Moreno
+      * @Author Juan Francisco Diaz Moreno, Ana Rodriguez Duran
       * 
       */
+    @Override
     public void recibirRespuestaMove( String move ) {
         
         ACLMessage inbox = new ACLMessage();
@@ -325,10 +326,10 @@ public class DroneRescue extends AbstractDrone {
         }
         
         if( inbox.getPerformativeInt() == ACLMessage.INFORM ) {
-            System.out.println( "ANAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA " +inbox.getSender().toString());
-            if( "qpid://HAWK@localhost:8080".equals(inbox.getSender()) ||
-                "qpid://SPARROW@localhost:8080".equals(inbox.getSender().toString()) ||
-                "qpid://FLY@localhost:8080".equals(inbox.getSender().toString()) ) {
+            //System.out.println( "ANAAAAA " +inbox.getSender().toString());
+            if("HAWK".equals(inbox.getSender().getLocalName()) ||
+                "SPARROW".equals(inbox.getSender().getLocalName()) ||
+                "FLY".equals(inbox.getSender().getLocalName()) ) {
                 System.out.println( getRolname() + " - recibiendo alemanes de " + inbox.getSender() );
                 recibirDetectados( inbox );
                 recibirRespuestaMove( move );
